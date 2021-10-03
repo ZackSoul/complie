@@ -1,5 +1,5 @@
 FROM frolvlad/alpine-gxx
 WORKDIR /app/
-COPY lexer.cpp ./
-RUN g++ lexer.cpp -o lexer
+COPY lab01.cpp ./
+RUN g++ lab01.cpp -o lexer
 RUN chmod +x lexer
