@@ -86,6 +86,7 @@ void cat(char x){
 }
 
 void analyse(FILE *fpin){
+    setReserve();
     char ch = ' ';
     while((ch = fgetc(fpin)) != EOF){
         token = "";
@@ -95,6 +96,7 @@ void analyse(FILE *fpin){
                 token += ch;
                 ch = fgetc(fpin);
             }
+            fseek(fpin,-1L,SEEK_CUR);
             if(isKeyword(token)){
                 if(token == "if"){
                     printf("If\n");
@@ -102,16 +104,16 @@ void analyse(FILE *fpin){
                 else if(token == "else"){
                     printf("Else\n");
                 }
-                if(token == "while"){
+                else if(token == "while"){
                     printf("While\n");
                 }
-                if(token == "break"){
+                else if(token == "break"){
                     printf("Break\n");
                 }
-                if(token == "continue"){
+                else if(token == "continue"){
                     printf("Continue\n");
                 }
-                if(token == "return"){
+                else{
                     printf("Return\n");
                 }
             }
@@ -140,7 +142,10 @@ void analyse(FILE *fpin){
             if(ch == '='){
                 printf("Eq\n");
             }
-            fseek(fpin,-1L,SEEK_CUR);
+            else{
+                printf("Assign\n");
+                fseek(fpin,-1L,SEEK_CUR);
+            }
         }
         else switch(ch){
             case '=':
@@ -198,12 +203,32 @@ void analyse(FILE *fpin){
                    printf("Gt\n");
                    break; 
                 }
-            default: printf("Err\n");
+            default: 
+                {
+                    printf("Err\n");
+                    return ;
+                }
         }
     }
 }
 
 
+
+// int main(){
+//     char inFile[40];
+//     FILE *fpin;
+//     while(true){
+//         scanf("%s",inFile);
+//         if((fpin = fopen(inFile,"r")) != NULL){
+//             break;
+//         }
+//         else{
+//             printf("文件名错误，请重新输入源文件名（包括路径和后缀）");
+//         }
+//     }
+//     analyse(fpin);
+//     return 0;
+// }
 
 int main(int argc,char** argv){
     char inFile[40];
