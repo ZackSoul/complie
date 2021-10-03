@@ -92,7 +92,12 @@ void analyse(FILE *fpin){
         token = "";
         if(isFilter(ch)) {}
         else if(isLowLetter(ch)){
-            while(isLowLetter(ch)){
+            // while(isLowLetter(ch)){
+            //     token += ch;
+            //     ch = fgetc(fpin);
+            // }
+            // fseek(fpin,-1L,SEEK_CUR);
+            while(isUpLetter(ch)||isLowLetter(ch)||ch=='-'||isDigit(ch)){
                 token += ch;
                 ch = fgetc(fpin);
             }
