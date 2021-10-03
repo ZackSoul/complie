@@ -1,5 +1,4 @@
-FROM frolvlad/alpine-gxx
-WORKDIR /app/
-COPY lab01.cpp ./
-RUN g++ lab01.cpp -o lexer
-RUN chmod +x lexer
+FROM gcc:10.2
+WORKDIR /myapp/
+COPY . ./
+RUN g++ -o out add.cpp main.cpp
