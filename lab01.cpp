@@ -8,9 +8,10 @@
 using namespace std;
 
 
-int main(){
+int main(int argc,char** argv){
     int a,b;
-    scanf("%d %d",&a,&b);
+    a = argv[1];
+    b = argv[2];
     printf("%d",a+b);
     return 0;
 }
