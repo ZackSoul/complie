@@ -97,7 +97,7 @@ void analyse(FILE *fpin){
             //     ch = fgetc(fpin);
             // }
             // fseek(fpin,-1L,SEEK_CUR);
-            while(isUpLetter(ch)||isLowLetter(ch)||ch=='-'||isDigit(ch)){
+            while(isUpLetter(ch)||isLowLetter(ch)||ch=='_'||isDigit(ch)){
                 token += ch;
                 ch = fgetc(fpin);
             }
@@ -134,8 +134,8 @@ void analyse(FILE *fpin){
             fseek(fpin,-1L,SEEK_CUR);
             cout << "Number(" << token << ")" << endl;
         }
-        else if(isUpLetter(ch)||isLowLetter(ch)){
-            while(isUpLetter(ch)||isLowLetter(ch)||ch=='-'||isDigit(ch)){
+        else if(isUpLetter(ch)||isLowLetter(ch)||ch=='_'){
+            while(isUpLetter(ch)||isLowLetter(ch)||ch=='_'||isDigit(ch)){
                 token += ch;
                 ch = fgetc(fpin);
             }
