@@ -1,7 +1,6 @@
-[jobs.lexer]
-
+[jobs.test-submit]
 image = { source = "dockerfile", path = "." }
 
 run = [
-  "./lexer $input"
+  "./out < $input",
 ]
