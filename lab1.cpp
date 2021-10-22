@@ -327,20 +327,22 @@ int main(int argc,char** argv){
     //     printf("%d\n",sym[i]);
     // }
     Parse();
+    ofstream out(argv[2]);
     for(int i = 0; i < word_p; i++){
         if(word[i] == "int"){
-            cout << "define dso_local i32";
+            out << "define dso_local i32";
         }
         else if(word[i] == "main"){
-            cout << "@main";
+            out << "@main";
         }
         else if(word[i] == "return"){
-            cout << "ret i32";
+            out << "ret i32";
         }
         else{
-            cout << word[i];
+            out << word[i];
         }
     }
+    out.close();
     // printf("yes");
     return 0;
 }
