@@ -335,7 +335,7 @@ int main(int argc,char** argv){
     // for(int i = 0; i < sym_p; i++){
     //     printf("%d\n",sym[i]);
     // }
-//     Parse();
+    Parse();
     ofstream out(argv[2]);
     for(int i = 0; i < word_p; i++){
         if(word[i] == "int"){
