@@ -338,12 +338,28 @@ int main(int argc,char** argv){
         else if(word[i] == "return"){
             out << "ret i32";
         }
+        else if(word[i] == ";"){
+            ;
+        }
         else{
             out << word[i];
         }
     }
     out.close();
-    // printf("yes");
+    // for(int i = 0; i < word_p; i++){
+    //     if(word[i] == "int"){
+    //         cout << "define dso_local i32";
+    //     }
+    //     else if(word[i] == "main"){
+    //         cout << "@main";
+    //     }
+    //     else if(word[i] == "return"){
+    //         cout << "ret i32";
+    //     }
+    //     else{
+    //         cout << word[i];
+    //     }
+    // }
     return 0;
 }
 
