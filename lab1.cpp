@@ -130,7 +130,7 @@ void lexerAnalyse(FILE *fpin){
             }
             else{
                 // printf("lexer error\n");
-                exit(-1);
+                //exit(-1);
             }
         }
         else if(isDigit(ch)){
@@ -142,7 +142,7 @@ void lexerAnalyse(FILE *fpin){
                     ch = fgetc(fpin);
                     if(!isDigit(ch)||!isHexadecimal(ch)){
                         // printf("hexademical error\n");
-                        exit(-1);
+                        //exit(-1);
                     }
                     else{
                         while(isDigit(ch)||isHexadecimal(ch)){
@@ -181,7 +181,7 @@ void lexerAnalyse(FILE *fpin){
 //                     word[word_p++] = token;
 //                     fseek(fpin,-1L,SEEK_CUR);
                     // printf("numtype error\n");
-                    exit(-1);
+                    //exit(-1);
                 }
             }
             else{
@@ -211,13 +211,13 @@ void lexerAnalyse(FILE *fpin){
                         }
                         else if(ch == EOF){
                             // printf("last\n");
-                            exit(-1);
+                            //exit(-1);
                         }
                         ch = fgetc(fpin);
                     }
                     else if(ch == EOF){
                         // printf("last\n");
-                        exit(-1);
+                        //exit(-1);
                     }
                     else{
                         ch = fgetc(fpin);
@@ -226,7 +226,7 @@ void lexerAnalyse(FILE *fpin){
             }
             else{
                 // printf("lexer error\n");
-                exit(-1);
+                //exit(-1);
             }
         }
         else switch(ch){
@@ -262,7 +262,7 @@ void lexerAnalyse(FILE *fpin){
                 }
             default: 
                 {
-                    exit(-1);
+                    //exit(-1);
                 }
         }
     }
