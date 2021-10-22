@@ -130,7 +130,7 @@ void lexerAnalyse(FILE *fpin){
             }
             else{
                 // printf("lexer error\n");
-                exit(-1);
+//                 exit(-1);
             }
         }
         else if(isDigit(ch)){
@@ -142,7 +142,7 @@ void lexerAnalyse(FILE *fpin){
                     ch = fgetc(fpin);
                     if(!isDigit(ch)||!isHexadecimal(ch)){
                         // printf("hexademical error\n");
-                        exit(-1);
+//                         exit(-1);
                     }
                     else{
                         while(isDigit(ch)||isHexadecimal(ch)){
@@ -217,7 +217,7 @@ void lexerAnalyse(FILE *fpin){
                     }
                     else if(ch == EOF){
                         // printf("last\n");
-                        exit(-1);
+//                         exit(-1);
                     }
                     else{
                         ch = fgetc(fpin);
@@ -335,7 +335,7 @@ int main(int argc,char** argv){
     // for(int i = 0; i < sym_p; i++){
     //     printf("%d\n",sym[i]);
     // }
-//     Parse();
+    Parse();
     ofstream out(argv[2]);
     for(int i = 0; i < word_p; i++){
         if(word[i] == "int"){
