@@ -318,6 +318,7 @@ void Parse(){
 int main(int argc,char** argv){
     char inFile[40];
     FILE *fpin;
+    ofstream out(argv[2]);
     while(true){
         strcpy(inFile,argv[1]);
         if((fpin = fopen(inFile,"r")) != NULL){
@@ -332,7 +333,6 @@ int main(int argc,char** argv){
     //     printf("%d\n",sym[i]);
     // }
     Parse();
-    ofstream out(argv[2]);
     for(int i = 0; i < word_p; i++){
         if(word[i] == "int"){
             out << "define dso_local i32";
