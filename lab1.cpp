@@ -263,6 +263,7 @@ void lexerAnalyse(FILE *fpin){
             default: 
                 {
 //                     exit(-1);
+                    break;
                 }
         }
     }
