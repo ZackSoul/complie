@@ -177,11 +177,11 @@ void lexerAnalyse(FILE *fpin){
                 //     fseek(fpin,-1L,SEEK_CUR);
                 // }
                 else{
-                    sym[sym_p++] = 4;
-                    word[word_p++] = token;
-                    fseek(fpin,-1L,SEEK_CUR);
+//                     sym[sym_p++] = 4;
+//                     word[word_p++] = token;
+//                     fseek(fpin,-1L,SEEK_CUR);
                     // printf("numtype error\n");
-//                     exit(-1);
+                    exit(-1);
                 }
             }
             else{
