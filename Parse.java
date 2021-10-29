@@ -1,4 +1,4 @@
-package lab1;
+
 
 public class Parse {
     public static int src = 0;
