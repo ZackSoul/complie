@@ -8,8 +8,8 @@ public class Main {
     public static ArrayList<Word> words = new ArrayList<>();
     public static ArrayList<Word> syms = new ArrayList<>();
     public static void main(String[] args) throws IOException {
-//        InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
-        InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab1\\in.txt"));
+       InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
+//         InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab1\\in.txt"));
         StringBuilder str = new StringBuilder();
         int flag;
         while((flag = fpin.read()) != -1){
