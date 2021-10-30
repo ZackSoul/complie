@@ -1,7 +1,13 @@
-[jobs.lexer]
+# -- judge.toml --
+# 这个文件负责告诉评测姬你需要怎么评测你的程序
 
+# 我们的评测标识符是 lab1
+[jobs.lab1]
+# 使用 Dockerfile 来源，路径就是当前文件夹
 image = { source = "dockerfile", path = "." }
 
+# 假如你用的是 Java
 run = [
-  "./lexer $input"
+  # 运行程序
+  "java Main $input $ir",
 ]
