@@ -1,8 +1,8 @@
 
 
 public class Word {
-    //type表示各终结符类型，0-过滤符,1-int,2-main,3-return,4-数字,5-(,6-),7-{,8=},9-;,10- -,
-    // 11-+
+    //type表示各终结符类型，0-过滤符,1-int,2-main,3-return,4-数字,5-(,6-),7-{,8-},9-;,10--,
+    // 11-+,12-*,13-/,14-%
     public int type;
 
     public String word;
@@ -83,6 +83,18 @@ public class Word {
         }
         else if(this.word.equals("+")){
             this.type = 11;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("*")){
+            this.type = 12;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("/")){
+            this.type = 13;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("%")){
+            this.type = 14;
             this.outPut = this.word;
         }
     }
