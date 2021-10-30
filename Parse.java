@@ -1,4 +1,5 @@
 
+
 public class Parse {
     public static int src = 0;
     public static void parseAnalyse(){
@@ -62,12 +63,16 @@ public class Parse {
     public static void AddExp0(){
         if(type() == 10){
             MulExp();
-            Main.stack.push(Main.stack.pop() - Main.stack.pop());
+            int b = Main.stack.pop();
+            int a = Main.stack.pop();
+            Main.stack.push(a - b);
             AddExp0();
         }
         else if(type() == 11){
             MulExp();
-            Main.stack.push(Main.stack.pop() + Main.stack.pop());
+            int b = Main.stack.pop();
+            int a = Main.stack.pop();
+            Main.stack.push(a + b);
             AddExp0();
         }
     }
@@ -81,19 +86,25 @@ public class Parse {
         if(type() == 12){
             src++;
             UnaryExp();
-            Main.stack.push(Main.stack.pop() * Main.stack.pop());
+            int b = Main.stack.pop();
+            int a = Main.stack.pop();
+            Main.stack.push(a * b);
             MulExp0();
         }
         else if(type() == 13){
             src++;
             UnaryExp();
-            Main.stack.push(Main.stack.pop() / Main.stack.pop());
+            int b = Main.stack.pop();
+            int a = Main.stack.pop();
+            Main.stack.push(a / b);
             MulExp0();
         }
         else if(type() == 14){
             src++;
             UnaryExp();
-            Main.stack.push(Main.stack.pop() % Main.stack.pop());
+            int b = Main.stack.pop();
+            int a = Main.stack.pop();
+            Main.stack.push(a % b);
             MulExp0();
         }
     }
