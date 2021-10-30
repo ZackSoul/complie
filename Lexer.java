@@ -1,4 +1,4 @@
-
+package lab2;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -83,6 +83,7 @@ public class Lexer {
                 }
             }
             else if(ch=='/'){
+                token.append(ch);
                 ch = s.charAt(i++);
                 if(ch=='/'){
                     while (ch != '\n') {
@@ -111,6 +112,11 @@ public class Lexer {
                             ch = s.charAt(i++);
                         }
                     }
+                }
+                else if(ch == '+' || ch == '-' || ch == '(' || ch == ' '){
+                    Main.syms.add(new Word(token.toString()));
+                    Main.words.add(new Word(token.toString()));
+                    i--;
                 }
                 else{
                     System.out.println("6");
@@ -158,6 +164,24 @@ public class Lexer {
                 {
                     Main.syms.add(new Word("+"));
                     Main.words.add(new Word("+"));
+                    break;
+                }
+                case '*':
+                {
+                    Main.syms.add(new Word("*"));
+                    Main.words.add(new Word("*"));
+                    break;
+                }
+                case '/':
+                {
+                    Main.syms.add(new Word("/"));
+                    Main.words.add(new Word("/"));
+                    break;
+                }
+                case '%':
+                {
+                    Main.syms.add(new Word("%"));
+                    Main.words.add(new Word("%"));
                     break;
                 }
                 default:
