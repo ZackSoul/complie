@@ -1,4 +1,4 @@
-package lab2;
+
 
 import java.math.BigInteger;
 import java.util.ArrayList;
