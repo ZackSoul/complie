@@ -62,16 +62,18 @@ public class Parse {
 
     public static void AddExp0(){
         if(type() == 10){
+            src++;
             MulExp();
-            int b = Main.stack.pop();
-            int a = Main.stack.pop();
+            Integer b = Main.stack.pop();
+            Integer a = Main.stack.pop();
             Main.stack.push(a - b);
             AddExp0();
         }
         else if(type() == 11){
+            src++;
             MulExp();
-            int b = Main.stack.pop();
-            int a = Main.stack.pop();
+            Integer b = Main.stack.pop();
+            Integer a = Main.stack.pop();
             Main.stack.push(a + b);
             AddExp0();
         }
@@ -86,8 +88,8 @@ public class Parse {
         if(type() == 12){
             src++;
             UnaryExp();
-            int b = Main.stack.pop();
-            int a = Main.stack.pop();
+            Integer b = Main.stack.pop();
+            Integer a = Main.stack.pop();
             Main.stack.push(a * b);
             MulExp0();
         }
@@ -110,10 +112,10 @@ public class Parse {
     }
 
     public static void UnaryExp() {
-        if (Main.syms.get(src).getType() == 5 || Main.syms.get(src).getType() == 4) {
+        if (type()== 5 || type() == 4) {
             primaryExp();
         } else {
-            int num = UnaryOp();
+            Integer num = UnaryOp();
             UnaryExp();
             Main.stack.push(num * Main.stack.pop());
         }
@@ -131,7 +133,7 @@ public class Parse {
     }
 
     public static int UnaryOp(){
-        if(Main.syms.get(src).getType()==10){
+        if(type()==10){
             match(10);
             return -1;
         }
