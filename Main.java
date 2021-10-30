@@ -24,6 +24,7 @@ public class Main {
         Parse.parseAnalyse();
         StringBuilder sout = new StringBuilder();
         int num = 1;
+        int cnt = 0;
         for(int i = 0; i < words.size(); i++){
             while(words.get(i).getType()==10||words.get(i).getType()==11){
                 if(words.get(i).getType()==10){
