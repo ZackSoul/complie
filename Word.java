@@ -1,4 +1,4 @@
-package lab2;
+
 
 public class Word {
     //type表示各终结符类型，0-过滤符,1-int,2-main,3-return,4-数字,5-(,6-),7-{,8=},9-;,10- -,
