@@ -38,9 +38,9 @@ public class Main {
                 num = num * Integer.valueOf(words.get(i).getOutPut());
                 sout.append(String.valueOf(num));
             }
-//            else{
-//                sout.append(words.get(i).getOutPut());
-//            }
+           else{
+               sout.append(words.get(i).getOutPut());
+           }
         }
         String out = sout.toString();
 //        System.out.println(out);
