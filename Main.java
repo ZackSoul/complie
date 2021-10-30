@@ -39,9 +39,9 @@ public class Main {
                 sout.append(String.valueOf(num));
             }
            else{
-               if(words.get(i).getType()!=5&&words.get(i).getType()!=6){
+//                if(words.get(i).getType()!=5&&words.get(i).getType()!=6){
                     sout.append(words.get(i).getOutPut());
-               }
+//                }
            }
         }
         String out = sout.toString();
