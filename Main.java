@@ -8,10 +8,13 @@ public class Main {
     public static String s;
     public static ArrayList<Word> words = new ArrayList<>();
     public static ArrayList<Word> syms = new ArrayList<>();
-    public static Stack<Integer> stack = new Stack<>();
+    public static Stack<Register> stack = new Stack<>();
+    public static ArrayList<String> functionList = new ArrayList<>();
+    public static int regIndex = 0;
+    public static StringBuilder out = new StringBuilder();
     public static void main(String[] args) throws IOException {
-       InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
-//         InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab2\\in.txt"));
+//        InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
+        InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab3\\in.txt"));
         StringBuilder str = new StringBuilder();
         int flag;
         while((flag = fpin.read()) != -1){
@@ -20,20 +23,20 @@ public class Main {
         fpin.close();
         s = str.toString();
         Lexer.lexerAnalyse(s);
-//        for(int i = 0; i < words.size(); i++){
-//            System.out.print(words.get(i).getWord());
-//        }
-        Parse.parseAnalyse();
-        StringBuilder sout = new StringBuilder();
-        sout.append("define dso_local i32 @main(){\n");
-        sout.append("\tret i32 ");
-        sout.append(stack.peek());
-        sout.append("\n}");
-        String out = sout.toString();
-//        System.out.println(out);
-       OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
-//         OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab2\\out.txt"));
-        fout.write(out);
-        fout.close();
+        out.append("define dso_local i32 @main(){\n");
+        if(Parse.parseAnalyse()){
+            out.append("\tret i32 ");
+            out.append("%" + stack.peek().getId());
+            out.append("\n}");
+            String sout = out.toString();
+            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab3\\out.txt"));
+//            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
+            fout.write(sout);
+            fout.close();
+//            System.out.println(out);
+        }
+        else{
+            System.exit(1);
+        }
     }
 }
