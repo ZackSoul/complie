@@ -1,156 +1,682 @@
 
-
 public class Parse {
     public static int src = 0;
-    public static void parseAnalyse(){
-        CompUnit();
+    public static boolean parseAnalyse(){
+       if(CompUnit()){
+           return true;
+       }
+       else{
+           return false;
+       }
     }
 
-    public static void match(int x){
-        if(Main.syms.get(src++).getType() != x){
-//            System.out.println("此时程序希望匹配符号为" + x);
-//            System.out.println("此时栈中符号为" + Main.syms.get(src-1).getType());
-//            System.out.println("此时栈中符号为" + Main.syms.get(src).getType());
+    public static boolean match(int x){
+        if(src >= Main.syms.size()){
+            System.out.println("out of index");
             System.exit(1);
         }
-//        else{
-//            System.out.println(x);
-//        }
-    }
-
-    public static void Number(){
-        match(4);
-        Main.stack.push(Integer.valueOf(Main.syms.get(src-1).getWord()));
-    }
-
-    public static void Stmt(){
-        match(3);
-        Exp();
-        match(9);
-    }
-
-    public static void Block(){
-        match(7);
-        Stmt();
-        match(8);
-    }
-
-    public static void Ident(){
-        match(2);
-    }
-
-    public static void FuncType(){
-        match(1);
-    }
-
-    public static void FuncDef(){
-        FuncType();
-        Ident();
-        match(5);
-        match(6);
-        Block();
-    }
-
-    public static void Exp(){
-        AddExp();
-    }
-
-    public static void AddExp(){
-        MulExp();
-        AddExp0();
-    }
-
-    public static void AddExp0(){
-        if(type() == 10){
-            src++;
-            MulExp();
-            Integer b = Main.stack.pop();
-            Integer a = Main.stack.pop();
-            Main.stack.push(a - b);
-            AddExp0();
-        }
-        else if(type() == 11){
-            src++;
-            MulExp();
-            Integer b = Main.stack.pop();
-            Integer a = Main.stack.pop();
-            Main.stack.push(a + b);
-            AddExp0();
-        }
-    }
-
-    public static void MulExp(){
-        UnaryExp();
-        MulExp0();
-    }
-
-    public static void MulExp0(){
-        if(type() == 12){
-            src++;
-            UnaryExp();
-            Integer b = Main.stack.pop();
-            Integer a = Main.stack.pop();
-            Main.stack.push(a * b);
-            MulExp0();
-        }
-        else if(type() == 13){
-            src++;
-            UnaryExp();
-            int b = Main.stack.pop();
-            int a = Main.stack.pop();
-            Main.stack.push(a / b);
-            MulExp0();
-        }
-        else if(type() == 14){
-            src++;
-            UnaryExp();
-            int b = Main.stack.pop();
-            int a = Main.stack.pop();
-            Main.stack.push(a % b);
-            MulExp0();
-        }
-    }
-
-    public static void UnaryExp() {
-        if (type()== 5 || type() == 4) {
-            primaryExp();
-        } else {
-            Integer num = UnaryOp();
-            UnaryExp();
-            Main.stack.push(num * Main.stack.pop());
-        }
-    }
-
-    public static void primaryExp(){
-        if(Main.syms.get(src).getType() == 5){
-            match(5);
-            Exp();
-            match(6);
+        if(Main.syms.get(src++).getType() != x){
+            src--;
+            return false;
         }
         else{
-            Number();
+            return true;
         }
     }
 
-    public static int UnaryOp(){
-        if(type()==10){
-            match(10);
-            return -1;
+    public static boolean CompUnit(){
+        if(FuncDef()){
+            return true;
         }
         else{
-            match(11);
-            return 1;
+            return false;
+        }
+    }
+
+    public static boolean FuncType(){
+        int id = src;
+        if(match(1)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Ident(){
+        int id = src;
+        if(match(17)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean BType(){
+        int id = src;
+        if(match(1)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean ConstInitval(){
+        int id = src;
+        if(ConstExp()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Number(){
+        int id = src;
+        if(match(4)){
+            Main.stack.push(new Register(0,Integer.valueOf(Main.syms.get(src-1).getWord())));
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Exp(){
+        int id = src;
+        if(AddExp()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean FunctionIdent(){
+        if(src >= Main.syms.size()){
+            System.out.println("out of index");
+            System.exit(1);
+        }
+        if(Main.syms.get(src++).getType() != 19){
+            src--;
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    public static boolean LVal(){
+        int id = src;
+        if(Ident()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean PrimaryExp(){
+        int id = src;
+        if(match(5)){
+            if(Exp()){
+                if(match(6)){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(LVal()){
+            return true;
+        }
+        else if(Number()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean FuncRParams(){
+        int id = src;
+        if(Exp()){
+            while(true){
+                if(match(16)){
+                    if(Exp()){
+                        ;
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    break;
+                }
+            }
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean UnaryExp(){
+        int id = src;
+        if(FunctionIdent()){
+            if(match(5)){
+                if(FuncRParams()){
+                    if(match(6)){
+                        return true;
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else if(match(6)){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        if(PrimaryExp()){
+            return true;
+        }
+        else if(UnaryOp()){
+            if(UnaryExp()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean UnaryOp(){
+        int id = src;
+        if(match(10) || match(11)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean MulExp0(){
+        int id = src;
+        if(match(12)){
+            if(UnaryExp()){
+                Integer b = Main.stack.pop().getNum();
+                Integer a = Main.stack.pop().getNum();
+                Register register = new Register(Main.regIndex++,a * b);
+                Main.out.append("\t%" + register.getId() + " = mul i32 " + a + ", " + b + "\n");
+                Main.stack.push(register);
+                if(MulExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(13)){
+            if(UnaryExp()){
+                Integer b = Main.stack.pop().getNum();
+                Integer a = Main.stack.pop().getNum();
+                Register register = new Register(Main.regIndex++,a / b);
+                Main.out.append("\t%" + register.getId() + " = sdiv i32 " + a + ", " + b + "\n");
+                Main.stack.push(register);
+                if(MulExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(14)){
+            if(UnaryExp()){
+                Integer b = Main.stack.pop().getNum();
+                Integer a = Main.stack.pop().getNum();
+                Register register = new Register(Main.regIndex++,a % b);
+                Main.out.append("\t%" + register.getId() + " = srem i32 " + a + ", " + b + "\n");
+                Main.stack.push(register);
+                if(MulExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
+    public static boolean MulExp(){
+        int id = src;
+        if(UnaryExp()){
+            if(MulExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean AddExp(){
+        int id = src;
+        if(MulExp()){
+            if(AddExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+    public static boolean AddExp0(){
+        int id = src;
+        if(match(10)){
+            if(MulExp()){
+                Integer b = Main.stack.pop().getNum();
+                Integer a = Main.stack.pop().getNum();
+                Register register = new Register(Main.regIndex++,a-b);
+                Main.out.append("\t%" + register.getId() + " = sub i32 " + a + ", " + b + "\n");
+                Main.stack.push(register);
+                if(AddExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(11)){
+            if(MulExp()){
+                Integer b = Main.stack.pop().getNum();
+                Integer a = Main.stack.pop().getNum();
+                Register register = new Register(Main.regIndex++,a+b);
+                Main.out.append("\t%" + register.getId() + " = add i32 " + a + ", " + b + "\n");
+                Main.stack.push(register);
+                if(AddExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
+    public static boolean ConstExp(){
+        int id = src;
+        if(AddExp()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean ConstDef(){
+        int id = src;
+        if(Ident()){
+            Main.out.append("\t%" + Main.regIndex++ + " = alloca i32\n");
+            if(match(18)){
+                if(ConstInitval()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean ConstDecl(){
+        int id = src;
+        if(match(15)){
+            if(BType()){
+                if(ConstDef()){
+                    while(true){
+                        if(match(16)){
+                            if(ConstDef()){
+                                ;
+                            }
+                            else{
+                                src = id;
+                                return false;
+                            }
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean InitVal(){
+        int id = src;
+        if(Exp()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean VarDef(){
+        int id = src;
+        if(Ident()){
+            Main.out.append("\t%" + Main.regIndex++ + " = alloca i32\n");
+            if(match(18)){
+                if(InitVal()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean VarDecl(){
+        int id = src;
+        if(BType()){
+            if(VarDef()){
+                while(true){
+                    if(match(16)){
+                        if(VarDef()){
+                            ;
+                        }
+                        else{
+                            return true;
+                        }
+                    }
+                    else{
+                        break;
+                    }
+                }
+                if(match(9)){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Decl(){
+        int id = src;
+        if(ConstDecl()){
+            return true;
+        }
+        else if(VarDecl()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Stmt(){
+        int id = src;
+        if(LVal()){
+            if(match(18)){
+                if(Exp()){
+                    if(match(9)){
+                        return true;
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(3)){
+            if(Exp()){
+                if(match(9)){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(Exp()){
+            if(match(9)){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(9)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean BlockItem(){
+        int id = src;
+        if(Decl()){
+            return true;
+        }
+        else if(Stmt()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Block(){
+        int id = src;
+        if(match(7)){
+            while(true){
+                if(BlockItem()){
+                    ;
+                }
+                else{
+                    break;
+                }
+            }
+            if(match(8)){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean Main(){
+        int id = src;
+        if(match(2)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
         }
     }
 
 
-    public static void CompUnit(){
-        FuncDef();
-    };
-
-    //返回当前syms中的token类型
-    public static int type(){
-        return Main.syms.get(src).getType();
+    public static boolean FuncDef(){
+        int id = src;
+        if(FuncType()){
+            if(Main()){
+                if(match(5)){
+                    if(match(6)){
+                        if(Block()){
+                            return true;
+                        }
+                        else{
+                            src = id;
+                            return false;
+                        }
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
     }
 
 }
