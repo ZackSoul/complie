@@ -1,4 +1,4 @@
-
+package lab3;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ public class Lexer {
     public static StringBuilder token = new StringBuilder();
     public static void lexerAnalyse(String s){
         setReserve();
+        setFunction();
         char ch;
         for(int i = 0; i < s.length();){
             ch = s.charAt(i++);
@@ -18,22 +19,37 @@ public class Lexer {
                 Word word = new Word(token.toString());
                 Main.words.add(word);
             }
-            else if(Character.isLowerCase(ch)){
-                while(Character.isLowerCase(ch)||Character.isUpperCase(ch)){
+            else if(isNondigit(ch)){
+                while(isNondigit(ch) || Character.isDigit(ch)){
                     token.append(ch);
                     ch = s.charAt(i++);
                 }
                 i--;
-                if(isReserve(token.toString())){
+                if(isReserve((token.toString()))){
                     Main.words.add(new Word(token.toString()));
                     Main.syms.add(new Word(token.toString()));
                 }
                 else{
-//                    System.out.println("1");
-//                    System.out.println(token.toString());
-//                    System.exit(1);
+                    Main.words.add(new Word(token.toString()));
+                    Main.syms.add(new Word(token.toString()));
                 }
             }
+//            else if(Character.isLowerCase(ch)){
+//                while(Character.isLowerCase(ch)||Character.isUpperCase(ch)){
+//                    token.append(ch);
+//                    ch = s.charAt(i++);
+//                }
+//                i--;
+//                if(isReserve(token.toString())){
+//                    Main.words.add(new Word(token.toString()));
+//                    Main.syms.add(new Word(token.toString()));
+//                }
+//                else{
+////                    System.out.println("1");
+////                    System.out.println(token.toString());
+////                    System.exit(1);
+//                }
+//            }
             else if(Character.isDigit(ch)){
                 if(ch == '0'){
                     token.append(ch);
@@ -68,8 +84,17 @@ public class Lexer {
                         i--;
                     }
                     else{
-                        System.out.println("3");
-                        System.exit(1);
+                        if(ch == ';'){
+                            Main.syms.add(new Word("0"));
+                            Main.words.add(new Word("0"));
+                            Main.syms.add(new Word(";"));
+                            Main.words.add(new Word(";"));
+                        }
+                        else{
+                            System.out.println(ch);
+                            System.out.println("3");
+                            System.exit(1);
+                        }
                     }
                 }
                 else{
@@ -77,9 +102,14 @@ public class Lexer {
                         token.append(ch);
                         ch = s.charAt(i++);
                     }
-                    Main.syms.add(new Word(token.toString()));
-                    Main.words.add(new Word(token.toString()));
-                    i--;
+                    if(isNondigit(ch)){
+                        System.exit(1);
+                    }
+                    else{
+                        Main.syms.add(new Word(token.toString()));
+                        Main.words.add(new Word(token.toString()));
+                        i--;
+                    }
                 }
             }
             else if(ch=='/'){
@@ -184,8 +214,21 @@ public class Lexer {
                     Main.words.add(new Word("%"));
                     break;
                 }
+                case ',':
+                {
+                    Main.syms.add(new Word(","));
+                    Main.words.add(new Word(","));
+                    break;
+                }
+                case '=':
+                {
+                    Main.syms.add(new Word("="));
+                    Main.words.add(new Word("="));
+                    break;
+                }
                 default:
                 {
+                    System.out.println(ch);
                     System.out.println("7");
                     System.exit(1);
                 }
@@ -197,6 +240,16 @@ public class Lexer {
         reserve.add("int");
         reserve.add("main");
         reserve.add("return");
+        reserve.add("const");
+    }
+
+    public static void setFunction(){
+        Main.functionList.add("getint");
+        Main.functionList.add("getch");
+        Main.functionList.add("getarray");
+        Main.functionList.add("putint");
+        Main.functionList.add("putch");
+        Main.functionList.add("putarray");
     }
 
     public static boolean isFilter(char ch){
@@ -211,6 +264,15 @@ public class Lexer {
     public static boolean isReserve(String token){
         for(int i = 0; i < reserve.size(); i++){
             if(token.equals(reserve.get(i))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isFunction(String token){
+        for(int i = 0; i < Main.functionList.size(); i++){
+            if(token.equals(Main.functionList.get(i))){
                 return true;
             }
         }
@@ -241,5 +303,12 @@ public class Lexer {
         BigInteger bigint = new BigInteger(hex,8);
         int num = bigint.intValue();
         return num;
+    }
+
+    public static boolean isNondigit(char ch){
+        if((ch >= 'a' && ch <= 'z') || ch == '_' || (ch >= 'A' && ch <= 'Z')){
+            return true;
+        }
+        return false;
     }
 }
