@@ -4,7 +4,7 @@
 # 使用 Java 12
 FROM openjdk:15
 # 向容器内复制文件
-COPY Main.java Lexer.java Word.java Parse.java /app/
+COPY Main.java Lexer.java Word.java Register.java Parse.java /app/
 # 编译程序
 WORKDIR /app/
 RUN javac -d ./output Main.java
