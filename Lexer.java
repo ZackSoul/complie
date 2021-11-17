@@ -149,8 +149,9 @@ public class Lexer {
                     i--;
                 }
                 else{
-                    System.out.println("666");
-                    System.exit(1);
+                    i--;
+//                     System.out.println("666");
+//                     System.exit(1);
                 }
             }
             else switch (ch){
