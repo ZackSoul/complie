@@ -22,7 +22,7 @@ public class Main {
         }
         fpin.close();
         s = str.toString();
-//         System.out.println(s);
+        System.out.println(s);
         Lexer.lexerAnalyse(s);
 //         for(int i = 0; i < words.size(); i++){
 //             System.out.print(words.get(i).getWord());
