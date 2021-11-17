@@ -1,5 +1,12 @@
 
+
+import java.util.ArrayList;
+import java.util.Stack;
+
 public class Parse {
+    public static ArrayList<Var> varList = new ArrayList<>();
+    public static Stack<String> tmpStack = new Stack<>();
+    public static int reg = 1;
     public static int src = 0;
     public static boolean parseAnalyse(){
        if(CompUnit()){
@@ -66,21 +73,21 @@ public class Parse {
         }
     }
 
-    public static boolean ConstInitval(){
+    public static String ConstInitval(){
         int id = src;
-        if(ConstExp()){
-            return true;
+        String tmpRegister;
+        if((tmpRegister = ConstExp()) != null){
+            return tmpRegister;
         }
         else{
             src = id;
-            return false;
+            return null;
         }
     }
 
     public static boolean Number(){
         int id = src;
         if(match(4)){
-            Main.stack.push(new Register(0,Integer.valueOf(Main.syms.get(src-1).getWord())));
             return true;
         }
         else{
@@ -89,14 +96,15 @@ public class Parse {
         }
     }
 
-    public static boolean Exp(){
+    public static String Exp(){
         int id = src;
-        if(AddExp()){
-            return true;
+        String tmpRegister;
+        if((tmpRegister = AddExp()) != null){
+            return tmpRegister;
         }
         else{
             src = id;
-            return false;
+            return null;
         }
     }
 
@@ -116,6 +124,7 @@ public class Parse {
 
     public static boolean LVal(){
         int id = src;
+//        String name = Main.syms.get(src).getWord();
         if(Ident()){
             return true;
         }
@@ -128,8 +137,16 @@ public class Parse {
     public static boolean PrimaryExp(){
         int id = src;
         if(match(5)){
-            if(Exp()){
+            String tmpRegister;
+            if((tmpRegister = Exp()) != null){
                 if(match(6)){
+                    if(tmpRegister.length()>=2 && tmpRegister.substring(0,2).equals("%x")){
+                        Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
+                        tmpStack.push("%" + (reg - 1));
+                    }
+                    else{
+                        tmpStack.push(tmpRegister);
+                    }
                     return true;
                 }
                 else{
@@ -143,9 +160,20 @@ public class Parse {
             }
         }
         else if(LVal()){
+            String name = Main.syms.get(src - 1).getWord();
+            if(inVarList(name)){
+                Var var = getVarByName(name);
+                Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
+                tmpStack.push("%" + (reg - 1));
+            }
+            else{
+                src = id;
+                return false;
+            }
             return true;
         }
         else if(Number()){
+            tmpStack.push(Main.syms.get(src-1).getWord());
             return true;
         }
         else{
@@ -154,36 +182,38 @@ public class Parse {
         }
     }
 
-    public static boolean FuncRParams(){
+    public static ArrayList<String> FuncRParams(){
         int id = src;
-        if(Exp()){
+        ArrayList<String> params = new ArrayList<>();
+        String tmpRegister1;
+        if((tmpRegister1 = Exp()) != null){
+            params.add(tmpRegister1);
             while(true){
                 if(match(16)){
-                    if(Exp()){
-                        ;
+                    String tmp;
+                    if((tmp = Exp()) != null){
+                        params.add(tmp);
                     }
                     else{
                         src = id;
-                        return false;
+                        System.exit(1);
                     }
                 }
                 else{
                     break;
                 }
             }
-            return true;
         }
-        else{
-            src = id;
-            return false;
-        }
+        return params;
     }
 
     public static boolean UnaryExp(){
+        int num = 0;
         int id = src;
         if(FunctionIdent()){
             if(match(5)){
-                if(FuncRParams()){
+                ArrayList<String> params = new ArrayList<>();
+                if((FuncRParams()).size() != 0){
                     if(match(6)){
                         return true;
                     }
@@ -208,8 +238,29 @@ public class Parse {
         if(PrimaryExp()){
             return true;
         }
-        else if(UnaryOp()){
+        else if((num = UnaryOp()) != 0){
             if(UnaryExp()){
+                String tmpRegister = tmpStack.pop();
+                if(tmpRegister.length() >= 2){
+                    if(tmpRegister.substring(0,2).equals("%x")){
+                        Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
+                        tmpStack.push("%" + (reg-1));
+                    }
+                    else{
+                        tmpStack.push(tmpRegister);
+                    }
+                }
+                else{
+                    tmpStack.push(tmpRegister);
+                }
+                String tmpRegister1 = tmpStack.pop();
+                if(num == -1){
+                    Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmpRegister1 +"\n");
+                    tmpStack.push("%" + (reg-1));
+                }
+                else{
+                    tmpStack.push(tmpRegister1);
+                }
                 return true;
             }
             else{
@@ -223,14 +274,17 @@ public class Parse {
         }
     }
 
-    public static boolean UnaryOp(){
+    public static int UnaryOp(){
         int id = src;
-        if(match(10) || match(11)){
-            return true;
+        if(match(10)){
+            return -1;
+        }
+        else if(match(11)){
+            return 1;
         }
         else{
             src = id;
-            return false;
+            return 0;
         }
     }
 
@@ -238,11 +292,11 @@ public class Parse {
         int id = src;
         if(match(12)){
             if(UnaryExp()){
-                Integer b = Main.stack.pop().getNum();
-                Integer a = Main.stack.pop().getNum();
-                Register register = new Register(Main.regIndex++,a * b);
-                Main.out.append("\t%" + register.getId() + " = mul i32 " + a + ", " + b + "\n");
-                Main.stack.push(register);
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                String tmpRegister = "%" + reg;
+                tmpStack.push(tmpRegister);
+                Main.out.append("\t%" + reg++ + " = mul i32 " + a + ", " + b + "\n" );
                 if(MulExp0()){
                     return true;
                 }
@@ -258,11 +312,11 @@ public class Parse {
         }
         else if(match(13)){
             if(UnaryExp()){
-                Integer b = Main.stack.pop().getNum();
-                Integer a = Main.stack.pop().getNum();
-                Register register = new Register(Main.regIndex++,a / b);
-                Main.out.append("\t%" + register.getId() + " = sdiv i32 " + a + ", " + b + "\n");
-                Main.stack.push(register);
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                String tmpRegister = "%" + reg;
+                tmpStack.push(tmpRegister);
+                Main.out.append("\t%" + reg++ + " = sdiv i32 " + a + ", " + b + "\n");
                 if(MulExp0()){
                     return true;
                 }
@@ -278,11 +332,11 @@ public class Parse {
         }
         else if(match(14)){
             if(UnaryExp()){
-                Integer b = Main.stack.pop().getNum();
-                Integer a = Main.stack.pop().getNum();
-                Register register = new Register(Main.regIndex++,a % b);
-                Main.out.append("\t%" + register.getId() + " = srem i32 " + a + ", " + b + "\n");
-                Main.stack.push(register);
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                String tmpRegister = "%" + reg;
+                tmpStack.push(tmpRegister);
+                Main.out.append("\t%" + reg++ + " = srem i32 " + a + ", " + b + "\n");
                 if(MulExp0()){
                     return true;
                 }
@@ -318,31 +372,47 @@ public class Parse {
         }
     }
 
-    public static boolean AddExp(){
+    public static String AddExp(){
         int id = src;
         if(MulExp()){
             if(AddExp0()){
-                return true;
+                return tmpStack.pop();
             }
             else{
                 src = id;
-                return false;
+                return null;
             }
         }
         else{
             src = id;
-            return false;
+            return null;
         }
     }
     public static boolean AddExp0(){
         int id = src;
         if(match(10)){
             if(MulExp()){
-                Integer b = Main.stack.pop().getNum();
-                Integer a = Main.stack.pop().getNum();
-                Register register = new Register(Main.regIndex++,a-b);
-                Main.out.append("\t%" + register.getId() + " = sub i32 " + a + ", " + b + "\n");
-                Main.stack.push(register);
+                String b = tmpStack.pop();
+//                String b1;
+//                if(b.substring(0,2).equals("%x")){
+//                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + b +"\n");
+//                    b1 = "%" + (reg - 1);
+//                }
+//                else{
+//                    b1 = b;
+//                }
+                String a = tmpStack.pop();
+//                String a1;
+//                if(a.substring(0,2).equals("%x")){
+//                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + a +"\n");
+//                    a1 = "%" + (reg - 1);
+//                }
+//                else{
+//                    a1 = a;
+//                }
+                String tmpRegister = "%" + reg;
+                tmpStack.push(tmpRegister);
+                Main.out.append("\t%" + reg++ + " = sub i32 " + a + ", " + b +"\n");
                 if(AddExp0()){
                     return true;
                 }
@@ -358,11 +428,11 @@ public class Parse {
         }
         else if(match(11)){
             if(MulExp()){
-                Integer b = Main.stack.pop().getNum();
-                Integer a = Main.stack.pop().getNum();
-                Register register = new Register(Main.regIndex++,a+b);
-                Main.out.append("\t%" + register.getId() + " = add i32 " + a + ", " + b + "\n");
-                Main.stack.push(register);
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                String tmpRegister = "%" + reg;
+                tmpStack.push(tmpRegister);
+                Main.out.append("\t%" + reg++ + " = add i32 " + a + ", " + b +"\n");
                 if(AddExp0()){
                     return true;
                 }
@@ -381,23 +451,32 @@ public class Parse {
         }
     }
 
-    public static boolean ConstExp(){
+    public static String ConstExp(){
         int id = src;
-        if(AddExp()){
-            return true;
+        String tmpRegister;
+        if((tmpRegister = AddExp()) != null){
+            return tmpRegister;
         }
         else{
             src = id;
-            return false;
+            return null;
         }
     }
 
     public static boolean ConstDef(){
         int id = src;
         if(Ident()){
-            Main.out.append("\t%" + Main.regIndex++ + " = alloca i32\n");
+            String name = Main.syms.get(src - 1).getWord();
+            if(inVarList(name)){
+                System.exit(1);
+            }
             if(match(18)){
-                if(ConstInitval()){
+                String tmpRegister;
+                if((tmpRegister = ConstInitval()) != null){
+                    Var var = new Var("%x" + varList.size(), name, true);
+                    varList.add(var);
+                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                    Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
                     return true;
                 }
                 else{
@@ -453,23 +532,33 @@ public class Parse {
         }
     }
 
-    public static boolean InitVal(){
+    public static String InitVal(){
         int id = src;
-        if(Exp()){
-            return true;
+        String tmpRegister;
+        if((tmpRegister = Exp()) != null){
+            return tmpRegister;
         }
         else{
             src = id;
-            return false;
+            return null;
         }
     }
 
     public static boolean VarDef(){
         int id = src;
         if(Ident()){
-            Main.out.append("\t%" + Main.regIndex++ + " = alloca i32\n");
+            String name = Main.syms.get(src-1).getWord();
+            if(inVarList(name)){
+                System.exit(1);
+            }
             if(match(18)){
-                if(InitVal()){
+                String tmpRegister;
+                if((tmpRegister = InitVal()) != null){
+                    Var var = new Var("%x"+ varList.size(),name,false);
+                    varList.add(var);
+                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                    Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
+
                     return true;
                 }
                 else{
@@ -478,6 +567,9 @@ public class Parse {
                 }
             }
             else{
+                Var var = new Var("%x"+ varList.size(),name,false);
+                varList.add(var);
+                Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
                 return true;
             }
         }
@@ -540,9 +632,15 @@ public class Parse {
     public static boolean Stmt(){
         int id = src;
         if(LVal()){
+            String name = Main.syms.get(src-1).getWord();
+            if(getVarByName(name).isConst){
+                System.exit(1);
+            }
             if(match(18)){
-                if(Exp()){
+                String tmpRegister;
+                if((tmpRegister = Exp()) != null){
                     if(match(9)){
+                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + getVarByName(name).getRegister() +"\n");
                         return true;
                     }
                     else{
@@ -561,8 +659,13 @@ public class Parse {
             }
         }
         else if(match(3)){
-            if(Exp()){
+            String tmpRegister;
+            if((tmpRegister = Exp()) != null){
                 if(match(9)){
+                    if(tmpRegister.substring(0,2).equals("%x")){
+                        Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
+                    }
+                    Main.out.append("\tret i32 %" + (reg-1));
                     return true;
                 }
                 else{
@@ -575,7 +678,7 @@ public class Parse {
                 return false;
             }
         }
-        else if(Exp()){
+        else if(Exp() != null){
             if(match(9)){
                 return true;
             }
@@ -677,6 +780,24 @@ public class Parse {
             src = id;
             return false;
         }
+    }
+
+    public static boolean inVarList(String name){
+        for (int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Var getVarByName(String name){
+        for(int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getName().equals(name)){
+                return varList.get(i);
+            }
+        }
+        return null;
     }
 
 }
