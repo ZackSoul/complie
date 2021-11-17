@@ -13,8 +13,8 @@ public class Main {
     public static int regIndex = 0;
     public static StringBuilder out = new StringBuilder();
     public static void main(String[] args) throws IOException {
-//        InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
-        InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab3\\in.txt"));
+       InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
+//         InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab3\\in.txt"));
         StringBuilder str = new StringBuilder();
         int flag;
         while((flag = fpin.read()) != -1){
@@ -29,8 +29,8 @@ public class Main {
             out.append("%" + stack.peek().getId());
             out.append("\n}");
             String sout = out.toString();
-            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab3\\out.txt"));
-//            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
+//             OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab3\\out.txt"));
+           OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
             fout.write(sout);
             fout.close();
 //            System.out.println(out);
