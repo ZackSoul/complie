@@ -149,7 +149,7 @@ public class Lexer {
                     i--;
                 }
                 else{
-                    System.out.println("6");
+                    System.out.println("666");
                     System.exit(1);
                 }
             }
