@@ -103,7 +103,6 @@ public class Parse {
             return tmpRegister;
         }
         else{
-            src = id;
             return null;
         }
     }
@@ -211,10 +210,23 @@ public class Parse {
         int num = 0;
         int id = src;
         if(FunctionIdent()){
+            String funcName = Main.syms.get(src-1).getWord();
             if(match(5)){
-                ArrayList<String> params = new ArrayList<>();
-                if((FuncRParams()).size() != 0){
+                ArrayList<String> params = FuncRParams();
+                if(params.size() != 0){
                     if(match(6)){
+                        if(funcName.equals("getint()")){
+                            System.out.println("getint参数错误");
+                            System.exit(1);
+                        }
+                        else if(funcName.equals("putint")){
+                            if(params.size() != 1){
+                                System.out.println("putint参数错误");
+                            }
+                            else{
+                                Main.out.append("\tcall void @putint(i32 " + params.get(0) + ")\n");
+                            }
+                        }
                         return true;
                     }
                     else{
@@ -223,6 +235,13 @@ public class Parse {
                     }
                 }
                 else if(match(6)){
+                    if(funcName.equals("getint")){
+                        Main.out.append("\t%" + reg++ + "= call i32 @getint()\n");
+                        tmpStack.push("%" + (reg-1));
+                    }
+                    else if(funcName.equals("putint")){
+                        System.out.println("putint参数不能为空");
+                    }
                     return true;
                 }
                 else{
@@ -376,7 +395,12 @@ public class Parse {
         int id = src;
         if(MulExp()){
             if(AddExp0()){
-                return tmpStack.pop();
+                if(tmpStack.size() != 0){
+                    return tmpStack.pop();
+                }
+                else{
+                    return null;
+                }
             }
             else{
                 src = id;
@@ -662,10 +686,13 @@ public class Parse {
             String tmpRegister;
             if((tmpRegister = Exp()) != null){
                 if(match(9)){
-                    if(tmpRegister.substring(0,2).equals("%x")){
+                    if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
+                        Main.out.append("\tret i32 %" + (reg-1));
                     }
-                    Main.out.append("\tret i32 %" + (reg-1));
+                    else{
+                        Main.out.append("\tret i32 %" + tmpRegister);
+                    }
                     return true;
                 }
                 else{
