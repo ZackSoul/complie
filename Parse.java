@@ -259,6 +259,10 @@ public class Parse {
         }
         else if((num = UnaryOp()) != 0){
             if(UnaryExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空1");
+                    System.exit(100);
+                }
                 String tmpRegister = tmpStack.pop();
                 if(tmpRegister.length() >= 2){
                     if(tmpRegister.substring(0,2).equals("%x")){
@@ -271,6 +275,10 @@ public class Parse {
                 }
                 else{
                     tmpStack.push(tmpRegister);
+                }
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空2");
+                    System.exit(200);
                 }
                 String tmpRegister1 = tmpStack.pop();
                 if(num == -1){
@@ -311,7 +319,15 @@ public class Parse {
         int id = src;
         if(match(12)){
             if(UnaryExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空3");
+                    System.exit(300);
+                }
                 String b = tmpStack.pop();
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空4");
+                    System.exit(400);
+                }
                 String a = tmpStack.pop();
                 String tmpRegister = "%" + reg;
                 tmpStack.push(tmpRegister);
@@ -331,7 +347,15 @@ public class Parse {
         }
         else if(match(13)){
             if(UnaryExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空5");
+                    System.exit(500);
+                }
                 String b = tmpStack.pop();
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空6");
+                    System.exit(600);
+                }
                 String a = tmpStack.pop();
                 String tmpRegister = "%" + reg;
                 tmpStack.push(tmpRegister);
@@ -351,7 +375,15 @@ public class Parse {
         }
         else if(match(14)){
             if(UnaryExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空7");
+                    System.exit(700);
+                }
                 String b = tmpStack.pop();
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空8");
+                    System.exit(800);
+                }
                 String a = tmpStack.pop();
                 String tmpRegister = "%" + reg;
                 tmpStack.push(tmpRegister);
@@ -416,24 +448,16 @@ public class Parse {
         int id = src;
         if(match(10)){
             if(MulExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空9");
+                    System.exit(900);
+                }
                 String b = tmpStack.pop();
-//                String b1;
-//                if(b.substring(0,2).equals("%x")){
-//                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + b +"\n");
-//                    b1 = "%" + (reg - 1);
-//                }
-//                else{
-//                    b1 = b;
-//                }
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空10");
+                    System.exit(1000);
+                }
                 String a = tmpStack.pop();
-//                String a1;
-//                if(a.substring(0,2).equals("%x")){
-//                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + a +"\n");
-//                    a1 = "%" + (reg - 1);
-//                }
-//                else{
-//                    a1 = a;
-//                }
                 String tmpRegister = "%" + reg;
                 tmpStack.push(tmpRegister);
                 Main.out.append("\t%" + reg++ + " = sub i32 " + a + ", " + b +"\n");
@@ -452,7 +476,15 @@ public class Parse {
         }
         else if(match(11)){
             if(MulExp()){
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空11");
+                    System.exit(1100);
+                }
                 String b = tmpStack.pop();
+                if(tmpStack.size() == 0){
+                    System.out.println("此处栈为空12");
+                    System.exit(1200);
+                }
                 String a = tmpStack.pop();
                 String tmpRegister = "%" + reg;
                 tmpStack.push(tmpRegister);
