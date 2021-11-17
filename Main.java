@@ -22,10 +22,11 @@ public class Main {
         }
         fpin.close();
         s = str.toString();
+        System.out.println(s);
         Lexer.lexerAnalyse(s);
-        for(int i = 0; i < words.size(); i++){
-            System.out.print(words.get(i).getWord());
-        }
+//         for(int i = 0; i < words.size(); i++){
+//             System.out.print(words.get(i).getWord());
+//         }
         out.append("define dso_local i32 @main(){\n");
         if(Parse.parseAnalyse()){
             out.append("\tret i32 ");
