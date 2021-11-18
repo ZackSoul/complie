@@ -10,7 +10,7 @@ public class Main {
     public static ArrayList<Word> syms = new ArrayList<>();
     public static Stack<Register> stack = new Stack<>();
     public static ArrayList<String> functionList = new ArrayList<>();
-    public static int regIndex = 0;
+    public static int regIndex = 1;
     public static StringBuilder out = new StringBuilder();
     public static void main(String[] args) throws IOException {
        InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
@@ -22,25 +22,26 @@ public class Main {
         }
         fpin.close();
         s = str.toString();
-//         System.out.println(s);
+//        System.out.println(s);
         Lexer.lexerAnalyse(s);
-//         for(int i = 0; i < words.size(); i++){
-//             System.out.print(words.get(i).getWord());
-//         }
+//        for(int i = 0; i < words.size(); i++){
+//            System.out.print(words.get(i).getWord());
+//        }
+//        for(int i = 0; i < syms.size(); i++){
+//            System.out.println(syms.get(i).getWord());
+//        }
+        out.append("declare i32 @getint()\n" +
+                "declare void @putint(i32)\n");
         out.append("define dso_local i32 @main(){\n");
-        if(Parse.parseAnalyse()){
-            out.append("\tret i32 ");
-            out.append("%" + stack.peek().getId());
-            out.append("\n}");
-            String sout = out.toString();
-//             OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab3\\out.txt"));
+        Parse.parseAnalyse();
+        out.append("\n}");
+
+
+        String sout = out.toString();
+//         OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab3\\out.txt"));
            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
-            fout.write(sout);
-            fout.close();
+        fout.write(sout);
+        fout.close();
 //            System.out.println(out);
-        }
-        else{
-            System.exit(1);
-        }
     }
 }
