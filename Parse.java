@@ -229,7 +229,7 @@ public class Parse {
                         tmpStack.push("%" + (reg - 1));
                     }
                     else if(funcName.equals("getch")){
-                        Main.out.append("\t%" + reg++ + "= call i32 @getch()");
+                        Main.out.append("\t%" + reg++ + "= call i32 @getch()\n");
                         tmpStack.push("%" + (reg - 1));
                     }
                     else if(funcName.equals("putint") || funcName.equals("putch")){
