@@ -196,7 +196,7 @@ public class Parse {
                 ArrayList<String> params = FuncRParams();
                 if(params.size() != 0){
                     if(match(6)){
-                        if(funcName.equals("getint()")){
+                        if(funcName.equals("getint") || funcName.equals("getch")){
                             System.out.println("getint参数错误");
                             System.exit(1);
                         }
@@ -206,6 +206,14 @@ public class Parse {
                             }
                             else{
                                 Main.out.append("\tcall void @putint(i32 " + params.get(0) + ")\n");
+                            }
+                        }
+                        else if(funcName.equals("putch")){
+                            if(params.size() != 1){
+                                System.out.println("putch参数错误");
+                            }
+                            else{
+                                Main.out.append("\tcall void @putch(i32 " + params.get(0) + ")\n");
                             }
                         }
                         return true;
@@ -218,9 +226,13 @@ public class Parse {
                 else if(match(6)){
                     if(funcName.equals("getint")){
                         Main.out.append("\t%" + reg++ + "= call i32 @getint()\n");
-                        tmpStack.push("%" + (reg-1));
+                        tmpStack.push("%" + (reg - 1));
                     }
-                    else if(funcName.equals("putint")){
+                    else if(funcName.equals("getch")){
+                        Main.out.append("\t%" + reg++ + "= call i32 @getch()");
+                        tmpStack.push("%" + (reg - 1));
+                    }
+                    else if(funcName.equals("putint") || funcName.equals("putch")){
                         System.out.println("putint参数不能为空");
                     }
                     return true;
