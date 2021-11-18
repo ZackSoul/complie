@@ -149,9 +149,11 @@ public class Lexer {
                     i--;
                 }
                 else{
+                    Main.syms.add(new Word(token.toString()));
+                    Main.words.add(new Word(token.toString()));
                     i--;
-//                     System.out.println("666");
-//                     System.exit(1);
+//                    System.out.println("6");
+//                    System.exit(1);
                 }
             }
             else switch (ch){
