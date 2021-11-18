@@ -8,6 +8,7 @@ public class Parse {
     public static Stack<String> tmpStack = new Stack<>();
     public static int reg = 1;
     public static int src = 0;
+    public static boolean exist_var = false;
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -81,6 +82,7 @@ public class Parse {
 
     public static String Exp(){
         int id = src;
+        exist_var = false;
         return AddExp();
     }
 
@@ -139,6 +141,9 @@ public class Parse {
             String name = Main.syms.get(src - 1).getWord();
             if(inVarList(name)){
                 Var var = getVarByName(name);
+                if(!var.isConst){
+                    exist_var = true;
+                }
                 Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
                 tmpStack.push("%" + (reg - 1));
             }
@@ -497,7 +502,7 @@ public class Parse {
             }
             if(match(18)){
                 String tmpRegister;
-                if((tmpRegister = ConstInitval()) != null){
+                if((tmpRegister = ConstInitval()) != null && !exist_var){
                     Var var = new Var("%x" + varList.size(), name, true);
                     varList.add(var);
                     Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
@@ -506,6 +511,7 @@ public class Parse {
                 }
                 else{
                     src = id;
+                    System.exit(1);
                     return false;
                 }
             }
