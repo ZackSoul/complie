@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -649,6 +650,9 @@ public class Parse {
         int id = src;
         if(LVal()){
             String name = Main.syms.get(src-1).getWord();
+            if(getVarByName(name) == null){
+                System.exit(1);
+            }
             if(getVarByName(name).isConst){
                 System.exit(1);
             }
@@ -683,7 +687,7 @@ public class Parse {
                         Main.out.append("\tret i32 %" + (reg-1));
                     }
                     else{
-                        Main.out.append("\tret i32 %" + tmpRegister);
+                        Main.out.append("\tret i32 " + tmpRegister);
                     }
                     return true;
                 }
