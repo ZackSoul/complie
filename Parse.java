@@ -1,5 +1,4 @@
 
-
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -8,13 +7,8 @@ public class Parse {
     public static Stack<String> tmpStack = new Stack<>();
     public static int reg = 1;
     public static int src = 0;
-    public static boolean parseAnalyse(){
-       if(CompUnit()){
-           return true;
-       }
-       else{
-           return false;
-       }
+    public static void parseAnalyse(){
+       CompUnit();
     }
 
     public static boolean match(int x){
@@ -31,13 +25,8 @@ public class Parse {
         }
     }
 
-    public static boolean CompUnit(){
-        if(FuncDef()){
-            return true;
-        }
-        else{
-            return false;
-        }
+    public static void CompUnit(){
+        FuncDef();
     }
 
     public static boolean FuncType(){
@@ -75,14 +64,7 @@ public class Parse {
 
     public static String ConstInitval(){
         int id = src;
-        String tmpRegister;
-        if((tmpRegister = ConstExp()) != null){
-            return tmpRegister;
-        }
-        else{
-            src = id;
-            return null;
-        }
+        return ConstExp();
     }
 
     public static boolean Number(){
@@ -98,13 +80,7 @@ public class Parse {
 
     public static String Exp(){
         int id = src;
-        String tmpRegister;
-        if((tmpRegister = AddExp()) != null){
-            return tmpRegister;
-        }
-        else{
-            return null;
-        }
+        return AddExp();
     }
 
     public static boolean FunctionIdent(){
@@ -166,8 +142,7 @@ public class Parse {
                 tmpStack.push("%" + (reg - 1));
             }
             else{
-                src = id;
-                return false;
+                System.exit(1);
             }
             return true;
         }
@@ -509,14 +484,7 @@ public class Parse {
 
     public static String ConstExp(){
         int id = src;
-        String tmpRegister;
-        if((tmpRegister = AddExp()) != null){
-            return tmpRegister;
-        }
-        else{
-            src = id;
-            return null;
-        }
+        return AddExp();
     }
 
     public static boolean ConstDef(){
@@ -590,14 +558,7 @@ public class Parse {
 
     public static String InitVal(){
         int id = src;
-        String tmpRegister;
-        if((tmpRegister = Exp()) != null){
-            return tmpRegister;
-        }
-        else{
-            src = id;
-            return null;
-        }
+        return Exp();
     }
 
     public static boolean VarDef(){
@@ -614,7 +575,6 @@ public class Parse {
                     varList.add(var);
                     Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
                     Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
-
                     return true;
                 }
                 else{
@@ -757,7 +717,8 @@ public class Parse {
 
     public static boolean BlockItem(){
         int id = src;
-        if(Decl()){
+        if(Main.syms.get(id).getWord().equals("const") || Main.syms.get(id).getWord().equals("int")){
+            Decl();
             return true;
         }
         else if(Stmt()){
@@ -769,7 +730,7 @@ public class Parse {
         }
     }
 
-    public static boolean Block(){
+    public static void Block(){
         int id = src;
         if(match(7)){
             while(true){
@@ -781,16 +742,14 @@ public class Parse {
                 }
             }
             if(match(8)){
-                return true;
+                ;
             }
             else{
-                src = id;
-                return false;
+                System.exit(1);
             }
         }
         else{
-            src = id;
-            return false;
+            System.exit(1);
         }
     }
 
@@ -806,38 +765,28 @@ public class Parse {
     }
 
 
-    public static boolean FuncDef(){
+    public static void FuncDef(){
         int id = src;
         if(FuncType()){
             if(Main()){
                 if(match(5)){
                     if(match(6)){
-                        if(Block()){
-                            return true;
-                        }
-                        else{
-                            src = id;
-                            return false;
-                        }
+                        Block();
                     }
                     else{
-                        src = id;
-                        return false;
+                        System.exit(1);
                     }
                 }
                 else{
-                    src = id;
-                    return false;
+                    System.exit(1);
                 }
             }
             else{
-                src = id;
-                return false;
+                System.exit(1);
             }
         }
         else{
-            src = id;
-            return false;
+            System.exit(0);
         }
     }
 
