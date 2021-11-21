@@ -801,12 +801,7 @@ public class Parse {
                             else{
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n\n");
-                                if(exit){
-                                    exit = false;
-                                }
-                                else {
-                                    Main.out.insert(endJump.pop(),"\tbr label %" + tmp + "\n\n");
-                                }
+                                Main.out.insert(endJump.pop(),"\tbr label %" + tmp + "\n\n");
                                 return true;
                             }
                         }
@@ -959,19 +954,13 @@ public class Parse {
     public static boolean LOrExp0(){
         int id = src;
         if(match(29)){
-            if(EqExp()){
+            if(LAndExp()){
                 String b = condStack.pop();
                 String a = condStack.pop();
                 Main.out.append("\t%cond" + condNum++ + " = or i1 " + a +", " + b +"\n");
                 condStack.push("%cond"+(condNum-1));
-                if(LAndExp0()){
-                    if(LOrExp0()){
-                        return true;
-                    }
-                    else{
-                        src = id;
-                        return false;
-                    }
+                if(LOrExp0()){
+                    return true;
                 }
                 else{
                     src = id;
