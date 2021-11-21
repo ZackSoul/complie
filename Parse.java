@@ -799,12 +799,13 @@ public class Parse {
                                 }
                             }
                             else{
-                                Main.out.append(elseJump.peek()+":\n\n");
+                                String tmp = elseJump.pop();
+                                Main.out.append(tmp+":\n\n");
                                 if(exit){
                                     exit = false;
                                 }
                                 else {
-                                    Main.out.insert(endJump.pop(),"\tbr label " + elseJump.pop() + "\n\n");
+                                    Main.out.insert(endJump.pop(),"\tbr label %" + tmp + "\n\n");
                                 }
                                 return true;
                             }
