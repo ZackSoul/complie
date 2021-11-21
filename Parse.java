@@ -6,8 +6,14 @@ import java.util.Stack;
 public class Parse {
     public static ArrayList<Var> varList = new ArrayList<>();
     public static Stack<String> tmpStack = new Stack<>();
+    public static Stack<String> blockStack = new Stack<>();
+    public static Stack<String> condStack = new Stack<>();
+    public static Stack<String> elseJump = new Stack<>();
+    public static Stack<Integer> endJump = new Stack<>();
     public static int reg = 1;
     public static int src = 0;
+    public static int bNum = 1;
+    public static int condNum = 1;
     public static boolean exist_var = false;
     public static void parseAnalyse(){
        CompUnit();
@@ -148,6 +154,7 @@ public class Parse {
                 tmpStack.push("%" + (reg - 1));
             }
             else{
+                System.out.println("10000");
                 System.exit(1);
             }
             return true;
@@ -176,6 +183,7 @@ public class Parse {
                     }
                     else{
                         src = id;
+                        System.out.println("2000");
                         System.exit(1);
                     }
                 }
@@ -275,8 +283,28 @@ public class Parse {
                 }
                 String tmpRegister1 = tmpStack.pop();
                 if(num == -1){
-                    Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmpRegister1 +"\n");
-                    tmpStack.push("%" + (reg-1));
+                    if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
+                        Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmpRegister1 +"\n");
+                        tmpStack.push("%" + (reg-1));
+                    }
+                    else{
+                        Main.out.append("\t%" + reg++ + "= zext i1 " + tmpRegister1 + " to i32\n");
+                        String tmp = "%" + (reg - 1);
+                        Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmp +"\n");
+                        tmpStack.push("%"+(reg-1));
+                        Main.out.append("\t%" + condNum++ + " = icmp ne i32 " + tmpStack.peek() + ", 0\n");
+                        condStack.push("%cond"+(condNum-1));
+                    }
+                }
+                else if(num == 2){
+                    if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
+                        Main.out.append("\t%cond" + condNum++ +" = icmp eq i32 %" + tmpRegister1 + ", 0\n");
+                        tmpStack.push("%cond"+(condNum-1));
+                    }
+                    else{
+                        Main.out.append("\t%cond" + condNum++ +" = icmp eq i1 " + tmpRegister1 + ", 0\n");
+                        tmpStack.push("%cond"+(condNum-1));
+                    }
                 }
                 else{
                     tmpStack.push(tmpRegister1);
@@ -301,6 +329,9 @@ public class Parse {
         }
         else if(match(11)){
             return 1;
+        }
+        else if(match(22)){
+            return 2;
         }
         else{
             src = id;
@@ -510,6 +541,7 @@ public class Parse {
         if(Ident()){
             String name = Main.syms.get(src - 1).getWord();
             if(inVarList(name)){
+                System.out.println("3000");
                 System.exit(1);
             }
             if(match(18)){
@@ -523,6 +555,7 @@ public class Parse {
                 }
                 else{
                     src = id;
+                    System.out.println("4000");
                     System.exit(1);
                     return false;
                 }
@@ -585,6 +618,7 @@ public class Parse {
         if(Ident()){
             String name = Main.syms.get(src-1).getWord();
             if(inVarList(name)){
+                System.out.println("5000");
                 System.exit(1);
             }
             if(match(18)){
@@ -669,9 +703,11 @@ public class Parse {
         if(LVal()){
             String name = Main.syms.get(src-1).getWord();
             if(getVarByName(name) == null){
+                System.out.println("6000");
                 System.exit(1);
             }
             if(getVarByName(name).isConst){
+                System.out.println("7000");
                 System.exit(1);
             }
             if(match(18)){
@@ -696,6 +732,11 @@ public class Parse {
                 return false;
             }
         }
+        else if(match(7)){
+            src--;
+            Block();
+            return true;
+        }
         else if(match(3)){
             String tmpRegister;
             if((tmpRegister = Exp()) != null){
@@ -708,6 +749,61 @@ public class Parse {
                         Main.out.append("\tret i32 " + tmpRegister);
                     }
                     return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(20)){
+            if(match(5)){
+                String tmpCond = Cond();
+                if(tmpCond != null){
+                    if(match(6)){
+                        Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
+                        Main.out.append("%block" + (bNum-2) + ":\n");
+                        blockStack.push("%block" + (bNum - 2));
+                        blockStack.push("%block" + (bNum - 1));
+                        elseJump.push("%block" + (bNum - 1));
+                        if(Stmt()){
+                            int tmpSize = Main.out.length();
+                            endJump.push(tmpSize);
+                            if(match(21)){
+                                Main.out.append(elseJump.pop() + ":\n");
+                                if(Stmt()){
+                                    endJump.push(Main.out.length());
+                                    Main.out.append("%block" + bNum++ + ":\n");
+                                    blockStack.push("%block" + (bNum - 1));
+                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                    return true;
+                                }
+                                else{
+                                    System.out.println("循环出错");
+                                    System.exit(1);
+                                    return false;
+                                }
+                            }
+                            else{
+                                Main.out.append("\tbr label %block" + (bNum - 1)+"\n\n");
+                                Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                return true;
+                            }
+                        }
+                        else{
+                            src = id;
+                            return false;
+                        }
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
                 }
                 else{
                     src = id;
@@ -767,10 +863,12 @@ public class Parse {
                 ;
             }
             else{
+                System.out.println("8000");
                 System.exit(1);
             }
         }
         else{
+            System.out.println("9000");
             System.exit(1);
         }
     }
@@ -796,21 +894,270 @@ public class Parse {
                         Block();
                     }
                     else{
+                        System.out.println("100001");
                         System.exit(1);
                     }
                 }
                 else{
+                    System.out.println("100002");
                     System.exit(1);
                 }
             }
             else{
+                System.out.println("100003");
                 System.exit(1);
             }
         }
         else{
-            System.exit(0);
+            System.out.println("100004");
+            System.exit(1);
         }
     }
+
+    public static String Cond(){
+        if(LOrExp()){
+            return condStack.pop();
+        }
+        else{
+            return null;
+        }
+    }
+
+    public static boolean LOrExp(){
+        int id = src;
+        if(LAndExp()){
+            if(LOrExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+
+    }
+
+    public static boolean LOrExp0(){
+        int id = src;
+        if(match(29)){
+            if(EqExp()){
+                String b = condStack.pop();
+                String a = condStack.pop();
+                Main.out.append("\t%cond" + condNum++ + " = or i1 " + a +", " + b +"\n");
+                condStack.push("%cond"+(condNum-1));
+                if(LAndExp0()){
+                    if(LOrExp0()){
+                        return true;
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
+
+    public static boolean RelExp(){
+        int id = src;
+        String tmpString = AddExp();
+        tmpStack.push(tmpString);
+        if(RelExp0()){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean RelExp0(){
+        int id = src;
+        if(match(25)){
+            String tmpRegister = AddExp();
+            tmpStack.push(tmpRegister);
+            String b = tmpStack.pop();
+            String a = tmpStack.pop();
+            Main.out.append("\t%cond" + condNum++ + " = icmp slt i32 " + a +", " + b +"\n");
+            condStack.push("%cond"+(condNum-1));
+            if(RelExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(26)){
+            String tmpRegister = AddExp();
+            tmpStack.push(tmpRegister);
+            String b = tmpStack.pop();
+            String a = tmpStack.pop();
+            Main.out.append("\t%cond" + condNum++ + " = icmp sgt i32 " + a +", " + b+"\n");
+            condStack.push("%cond"+(condNum-1));
+            if(RelExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(27)){
+            String tmpRegister = AddExp();
+            tmpStack.push(tmpRegister);
+            String b = tmpStack.pop();
+            String a = tmpStack.pop();
+            Main.out.append("\t%cond" + condNum++ + " = icmp sle i32 " + a +", " + b +"\n");
+            condStack.push("%cond"+(condNum-1));
+            if(RelExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(28)){
+            String tmpRegister = AddExp();
+            tmpStack.push(tmpRegister);
+            String b = tmpStack.pop();
+            String a = tmpStack.pop();
+            Main.out.append("\t%cond" + condNum++ + " = icmp sge i32 " + a +", " + b + "\n");
+            condStack.push("%cond"+(condNum-1));
+            if(RelExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
+    public static boolean EqExp(){
+        int id = src;
+        if(RelExp()){
+            if(EqExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean EqExp0(){
+        int id = src;
+        if(match(23)){
+            if(RelExp()){
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                Main.out.append("\t%cond" + condNum++ + " = icmp eq i32 " + a +", " + b + "\n");
+                condStack.push("%cond"+(condNum-1));
+                if(EqExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(24)){
+            if(RelExp()){
+                String b = tmpStack.pop();
+                String a = tmpStack.pop();
+                Main.out.append("\t%cond" + condNum++ + " = icmp ne i32 " + a +", " + b + "\n");
+                condStack.push("%cond"+(condNum-1));
+                if(EqExp0()){
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
+    public static boolean LAndExp(){
+        int id = src;
+        if(EqExp()){
+            if(LAndExp0()){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+    }
+
+    public static boolean LAndExp0(){
+        int id = src;
+        if(match(30)){
+            if(EqExp()) {
+                String b = condStack.pop();
+                String a = condStack.pop();
+                Main.out.append("\t%cond" + condNum++ + " = and i1 " + a +", " + b +"\n");
+                condStack.push("%cond"+(condNum-1));
+                if (LAndExp0()) {
+                    return true;
+                } else {
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
+
 
     public static boolean inVarList(String name){
         for (int i = 0; i < varList.size(); i++){
