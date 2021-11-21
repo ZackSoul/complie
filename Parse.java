@@ -790,7 +790,7 @@ public class Parse {
                                 }
                             }
                             else{
-                                Main.out.append(elseJump.peek()+":\n\n");
+                                Main.out.append(elseJump.pop()+":\n\n");
                                 Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                 return true;
                             }
