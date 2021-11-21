@@ -292,7 +292,7 @@ public class Parse {
                         String tmp = "%" + (reg - 1);
                         Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmp +"\n");
                         tmpStack.push("%"+(reg-1));
-                        Main.out.append("\t%" + condNum++ + " = icmp ne i32 " + tmpStack.peek() + ", 0\n");
+                        Main.out.append("\tcond%" + condNum++ + " = icmp ne i32 " + tmpStack.peek() + ", 0\n");
                         condStack.push("%cond"+(condNum-1));
                     }
                 }
