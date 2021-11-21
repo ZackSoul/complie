@@ -298,7 +298,7 @@ public class Parse {
                 }
                 else if(num == 2){
                     if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
-                        Main.out.append("\t%cond" + condNum++ +" = icmp eq i32 %" + tmpRegister1 + ", 0\n");
+                        Main.out.append("\t%cond" + condNum++ +" = icmp eq i32 " + tmpRegister1 + ", 0\n");
                         tmpStack.push("%cond"+(condNum-1));
                     }
                     else{
