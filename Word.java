@@ -2,7 +2,8 @@
 
 public class Word {
     //type表示各终结符类型，0-过滤符,1-int,2-main,3-return,4-数字,5-(,6-),7-{,8-},9-;,10--,
-    // 11-+,12-*,13-/,14-%,15-const,16-, 17-标识符,18-=,19-函数名
+    // 11-+,12-*,13-/,14-%,15-const,16-, 17-标识符,18-=,19-函数名，20-if,21-else
+    //22-!,23-==,24-!=,25-<,26->,27-<=,28->=,29-||,30-&&
     public int type;
 
     public String word;
@@ -48,6 +49,14 @@ public class Word {
             this.type = 3;
             this.outPut = "ret i32";
         }
+        else if(this.word.equals("if")){
+            this.type = 20;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("else")){
+            this.type = 21;
+            this.outPut = this.word;
+        }
         else if(this.word.equals("const")){
             this.type = 15;
             this.outPut = this.word;
@@ -79,6 +88,42 @@ public class Word {
         else if(this.word.equals(";")){
             this.type = 9;
             this.outPut = "";
+        }
+        else if(this.word.equals("!")){
+            this.type = 22;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("!=")){
+            this.type = 24;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("==")){
+            this.type = 23;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("<")){
+            this.type = 25;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals(">")){
+            this.type = 26;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("<=")){
+            this.type = 27;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals(">=")){
+            this.type = 28;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("||")){
+            this.type = 29;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("&&")){
+            this.type = 30;
+            this.outPut = this.word;
         }
         else if(Lexer.isFilter(this.word.charAt(0))){
             this.type = 0;
