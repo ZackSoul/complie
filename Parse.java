@@ -745,11 +745,11 @@ public class Parse {
                     if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
                         exit = true;
-                        Main.out.append("\tret i32 %" + (reg-1));
+                        Main.out.append("\tret i32 %" + (reg-1) + "\n\n");
                     }
                     else{
                         exit = true;
-                        Main.out.append("\tret i32 " + tmpRegister);
+                        Main.out.append("\tret i32 " + tmpRegister + "\n\n");
                     }
                     return true;
                 }
@@ -788,7 +788,12 @@ public class Parse {
                                         Main.out.append("block" + bNum++ + ":\n");
                                         blockStack.push("%block" + (bNum - 1));
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                        Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        if(!exit){
+                                            Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        }
+                                        else{
+                                            exit = false;
+                                        }
                                         return true;
 //                                    }
                                 }
@@ -801,7 +806,8 @@ public class Parse {
                             else{
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n\n");
-                                Main.out.insert(endJump.pop(),"\tbr label %" + tmp + "\n\n");
+                                int t = endJump.pop();
+                                Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
                                 return true;
                             }
                         }
