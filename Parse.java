@@ -15,6 +15,7 @@ public class Parse {
     public static int bNum = 1;
     public static int condNum = 1;
     public static boolean exist_var = false;
+    public static boolean exit = false;
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -743,9 +744,11 @@ public class Parse {
                 if(match(9)){
                     if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
+                        exit = true;
                         Main.out.append("\tret i32 %" + (reg-1));
                     }
                     else{
+                        exit = true;
                         Main.out.append("\tret i32 " + tmpRegister);
                     }
                     return true;
@@ -776,12 +779,18 @@ public class Parse {
                             if(match(21)){
                                 Main.out.append(elseJump.pop() + ":\n");
                                 if(Stmt()){
-                                    endJump.push(Main.out.length());
-                                    Main.out.append("block" + bNum++ + ":\n");
-                                    blockStack.push("%block" + (bNum - 1));
-                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                    return true;
+//                                    if(exit){
+//                                        exit = false;
+//                                        return true;
+//                                    }
+//                                    else{
+                                        endJump.push(Main.out.length());
+                                        Main.out.append("block" + bNum++ + ":\n");
+                                        blockStack.push("%block" + (bNum - 1));
+                                        Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        return true;
+//                                    }
                                 }
                                 else{
                                     System.out.println("循环出错");
@@ -790,8 +799,13 @@ public class Parse {
                                 }
                             }
                             else{
-                                Main.out.append(elseJump.pop()+":\n\n");
-                                Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                Main.out.append(elseJump.peek()+":\n\n");
+                                if(exit){
+                                    exit = false;
+                                }
+                                else {
+                                    Main.out.insert(endJump.pop(),"\tbr label " + elseJump.pop() + "\n\n");
+                                }
                                 return true;
                             }
                         }
