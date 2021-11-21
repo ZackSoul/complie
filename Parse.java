@@ -766,10 +766,10 @@ public class Parse {
                 if(tmpCond != null){
                     if(match(6)){
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
-                        Main.out.append("%block" + (bNum-2) + ":\n");
+                        Main.out.append("block" + (bNum-2) + ":\n");
                         blockStack.push("%block" + (bNum - 2));
                         blockStack.push("%block" + (bNum - 1));
-                        elseJump.push("%block" + (bNum - 1));
+                        elseJump.push("block" + (bNum - 1));
                         if(Stmt()){
                             int tmpSize = Main.out.length();
                             endJump.push(tmpSize);
@@ -777,7 +777,7 @@ public class Parse {
                                 Main.out.append(elseJump.pop() + ":\n");
                                 if(Stmt()){
                                     endJump.push(Main.out.length());
-                                    Main.out.append("%block" + bNum++ + ":\n");
+                                    Main.out.append("block" + bNum++ + ":\n");
                                     blockStack.push("%block" + (bNum - 1));
                                     Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
