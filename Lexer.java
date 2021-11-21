@@ -91,9 +91,9 @@ public class Lexer {
                             Main.words.add(new Word(";"));
                         }
                         else{
-                            System.out.println(ch);
-                            System.out.println("3");
-                            System.exit(1);
+                            Main.syms.add(new Word("0"));
+                            Main.words.add(new Word("0"));
+                            i--;
                         }
                     }
                 }
@@ -154,6 +154,70 @@ public class Lexer {
                     i--;
 //                    System.out.println("6");
 //                    System.exit(1);
+                }
+            }
+            else if(ch == '='){
+                token.append(ch);
+                ch = s.charAt(i++);
+                if(ch == '=') {
+                    token.append(ch);
+                }
+                else{
+                    i--;
+                }
+                Main.syms.add(new Word(token.toString()));
+                Main.words.add(new Word(token.toString()));
+            }
+            else if(ch == '!'){
+                token.append(ch);
+                ch = s.charAt(i++);
+                if(ch == '='){
+                    token.append(ch);
+                }
+                else{
+                    i--;
+                }
+                Main.syms.add(new Word(token.toString()));
+                Main.words.add(new Word(token.toString()));
+            }
+            else if(ch == '<' || ch == '>'){
+                token.append(ch);
+                ch = s.charAt(i++);
+                if(ch == '='){
+                    token.append(ch);
+                }
+                else{
+                    i--;
+                }
+                Main.syms.add(new Word(token.toString()));
+                Main.words.add(new Word(token.toString()));
+            }
+            else if(ch == '|'){
+                token.append(ch);
+                ch = s.charAt(i++);
+                if(ch == '|'){
+                    token.append(ch);
+                    Main.syms.add(new Word(token.toString()));
+                    Main.words.add(new Word(token.toString()));
+                }
+                else{
+                    System.out.println(3);
+                    System.out.println(ch);
+                    System.exit(1);
+                }
+            }
+            else if(ch == '&'){
+                token.append(ch);
+                ch = s.charAt(i++);
+                if(ch == '&'){
+                    token.append(ch);
+                    Main.syms.add(new Word(token.toString()));
+                    Main.words.add(new Word(token.toString()));
+                }
+                else{
+                    System.out.println(10);
+                    System.out.println(ch);
+                    System.exit(1);
                 }
             }
             else switch (ch){
@@ -244,6 +308,8 @@ public class Lexer {
         reserve.add("main");
         reserve.add("return");
         reserve.add("const");
+        reserve.add("if");
+        reserve.add("else");
     }
 
     public static void setFunction(){
