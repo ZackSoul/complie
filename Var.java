@@ -1,9 +1,28 @@
 
+
 public class Var {
     String register;
     String name;
     boolean isConst;
     int blockNum;
+    boolean isGlobal = false;
+    int value = 0;
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+
+    public void setGlobal(boolean global) {
+        isGlobal = global;
+    }
 
     public int getBlockNum() {
         return blockNum;
