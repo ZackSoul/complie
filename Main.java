@@ -1,7 +1,7 @@
 
+
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Stack;
 
 public class Main {
     public static String s;
@@ -11,8 +11,8 @@ public class Main {
     public static int regIndex = 1;
     public static StringBuilder out = new StringBuilder();
     public static void main(String[] args) throws IOException {
-       InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
-//         InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab4\\in.txt"));
+//        InputStreamReader fpin = new InputStreamReader(new FileInputStream(args[0]));
+        InputStreamReader fpin = new InputStreamReader(new FileInputStream("E:\\JavaFile\\compile\\src\\lab5\\in.txt"));
         StringBuilder str = new StringBuilder();
         int flag;
         while((flag = fpin.read()) != -1){
@@ -20,11 +20,11 @@ public class Main {
         }
         fpin.close();
         s = str.toString();
-       System.out.println(s);
+//        System.out.println(s);
         Lexer.lexerAnalyse(s);
-//         for(int i = 0; i < words.size(); i++){
-//             System.out.print(words.get(i).getWord());
-//         }
+//        for(int i = 0; i < words.size(); i++){
+//            System.out.print(words.get(i).getWord());
+//        }
 //        for(int i = 0; i < syms.size(); i++){
 //            System.out.println(syms.get(i).getWord());
 //        }
@@ -32,14 +32,16 @@ public class Main {
                 "declare void @putint(i32)\n" +
                 "declare i32 @getch()\n" +
                 "declare void @putch(i32)\n");
-        out.append("define dso_local i32 @main(){\n");
         Parse.parseAnalyse();
         out.append("\n}");
+
+        System.out.println(Parse.bNum);
+        System.out.println(Parse.curBlock);
 //
 //
         String sout = out.toString();
-//         OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab4\\out.txt"));
-           OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
+        OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab5\\out.txt"));
+////            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
         fout.write(sout);
         fout.close();
 ////            System.out.println(out);
