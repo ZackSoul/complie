@@ -12,10 +12,12 @@ public class Parse {
     public static Stack<Integer> endJump = new Stack<>();
     public static int reg = 1;
     public static int src = 0;
-    public static int bNum = 1;
+    public static int bNum = 0;
     public static int condNum = 1;
     public static boolean exist_var = false;
     public static boolean exit = false;
+    public static int curBlock = 1;
+    public static boolean initCond = false;
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -155,6 +157,9 @@ public class Parse {
                 tmpStack.push("%" + (reg - 1));
             }
             else{
+                for(int i = 0; i < varList.size(); i++){
+                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+                }
                 System.out.println("10000");
                 System.exit(1);
             }
@@ -541,14 +546,14 @@ public class Parse {
         int id = src;
         if(Ident()){
             String name = Main.syms.get(src - 1).getWord();
-            if(inVarList(name)){
+            if(inBlockVarList(name)){
                 System.out.println("3000");
                 System.exit(1);
             }
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = ConstInitval()) != null && !exist_var){
-                    Var var = new Var("%x" + varList.size(), name, true);
+                    Var var = new Var("%x" + varList.size(), name, true, curBlock);
                     varList.add(var);
                     Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
                     Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
@@ -618,14 +623,20 @@ public class Parse {
         int id = src;
         if(Ident()){
             String name = Main.syms.get(src-1).getWord();
-            if(inVarList(name)){
+            if(inBlockVarList(name)){
+                System.out.println(curBlock);
                 System.out.println("5000");
+                for(int i = 0; i < varList.size(); i++){
+                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+                }
+                System.out.println("=======================================");
+                System.out.println(getVarByName(name).getName() + " " + getVarByName(name).getBlockNum());
                 System.exit(1);
             }
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = InitVal()) != null){
-                    Var var = new Var("%x"+ varList.size(),name,false);
+                    Var var = new Var("%x"+ varList.size(),name,false, curBlock);
                     varList.add(var);
                     Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
                     Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
@@ -637,7 +648,7 @@ public class Parse {
                 }
             }
             else{
-                Var var = new Var("%x"+ varList.size(),name,false);
+                Var var = new Var("%x"+ varList.size(),name,false, curBlock);
                 varList.add(var);
                 Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
                 return true;
@@ -704,6 +715,9 @@ public class Parse {
         if(LVal()){
             String name = Main.syms.get(src-1).getWord();
             if(getVarByName(name) == null){
+                for(int i = 0; i < varList.size(); i++){
+                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+                }
                 System.out.println("6000");
                 System.exit(1);
             }
@@ -736,6 +750,7 @@ public class Parse {
         else if(match(7)){
             src--;
             Block();
+            removeBlockVar();
             return true;
         }
         else if(match(3)){
@@ -768,34 +783,39 @@ public class Parse {
                 String tmpCond = Cond();
                 if(tmpCond != null){
                     if(match(6)){
+                        initCond = true;
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
                         Main.out.append("block" + (bNum-2) + ":\n");
+                        curBlock = bNum - 2;
                         blockStack.push("%block" + (bNum - 2));
                         blockStack.push("%block" + (bNum - 1));
                         elseJump.push("block" + (bNum - 1));
                         if(Stmt()){
+                            initCond = false;
+                            removeBlockVar();
                             int tmpSize = Main.out.length();
                             endJump.push(tmpSize);
                             if(match(21)){
-                                Main.out.append(elseJump.pop() + ":\n");
+//                                Main.out.append(elseJump.pop() + ":\n");
+                                String tmp = elseJump.pop();
+                                Main.out.append(tmp+":\n");
+                                initCond = true;
+                                curBlock = Integer.valueOf(tmp.substring(5,tmp.length()));
                                 if(Stmt()){
-//                                    if(exit){
-//                                        exit = false;
-//                                        return true;
-//                                    }
-//                                    else{
-                                        endJump.push(Main.out.length());
-                                        Main.out.append("block" + bNum++ + ":\n");
-                                        blockStack.push("%block" + (bNum - 1));
+                                    removeBlockVar();
+                                    initCond = false;
+                                    endJump.push(Main.out.length());
+                                    Main.out.append("block" + bNum++ + ":\n");
+                                    curBlock = bNum - 1;
+                                    blockStack.push("%block" + (bNum - 1));
+                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                    if(!exit){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                        if(!exit){
-                                            Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                        }
-                                        else{
-                                            exit = false;
-                                        }
-                                        return true;
-//                                    }
+                                    }
+                                    else{
+                                        exit = false;
+                                    }
+                                    return true;
                                 }
                                 else{
                                     System.out.println("循环出错");
@@ -806,6 +826,7 @@ public class Parse {
                             else{
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n\n");
+                                curBlock = Integer.valueOf(tmp.substring(5,tmp.length()));
                                 int t = endJump.pop();
                                 Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
                                 return true;
@@ -867,6 +888,10 @@ public class Parse {
     public static void Block(){
         int id = src;
         if(match(7)){
+            if(!initCond){
+                bNum++;
+                curBlock = bNum -1;
+            }
             while(true){
                 if(BlockItem()){
                     ;
@@ -1168,10 +1193,23 @@ public class Parse {
         }
     }
 
-
     public static boolean inVarList(String name){
         for (int i = 0; i < varList.size(); i++){
-            if(varList.get(i).getName().equals(name)){
+            if(varList.get(i).getName().equals(name) && varList.get(i).getBlockNum() == curBlock){
+                return true;
+            }
+        }
+        for (int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getName().equals(name) && varList.get(i).getBlockNum() != -1){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean inBlockVarList(String name){
+        for (int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getName().equals(name) && varList.get(i).getBlockNum() == curBlock){
                 return true;
             }
         }
@@ -1180,11 +1218,24 @@ public class Parse {
 
     public static Var getVarByName(String name){
         for(int i = 0; i < varList.size(); i++){
-            if(varList.get(i).getName().equals(name)){
+            if(varList.get(i).getName().equals(name) && varList.get(i).getBlockNum() == curBlock){
+                return varList.get(i);
+            }
+        }
+        for(int i = varList.size() - 1; i >= 0; i--){
+            if(varList.get(i).getName().equals(name) && varList.get(i).getBlockNum() != -1){
                 return varList.get(i);
             }
         }
         return null;
+    }
+
+    public static void removeBlockVar(){
+        for(int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getBlockNum() == curBlock){
+                varList.get(i).setBlockNum(-1);
+            }
+        }
     }
 
 }
