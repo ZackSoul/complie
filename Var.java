@@ -1,14 +1,23 @@
 
-
 public class Var {
     String register;
     String name;
     boolean isConst;
+    int blockNum;
 
-    public Var(String register,String name, boolean isConst){
+    public int getBlockNum() {
+        return blockNum;
+    }
+
+    public void setBlockNum(int blockNum) {
+        this.blockNum = blockNum;
+    }
+
+    public Var(String register, String name, boolean isConst, int blockNum){
         this.register = register;
         this.name = name;
         this.isConst = isConst;
+        this.blockNum = blockNum;
     }
 
     public String getRegister() {
