@@ -749,8 +749,10 @@ public class Parse {
         }
         else if(match(7)){
             src--;
+            int tmp = curBlock;
             Block();
             removeBlockVar();
+            curBlock = tmp;
             return true;
         }
         else if(match(3)){
