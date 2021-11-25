@@ -626,6 +626,7 @@ public class Parse {
             if(inBlockVarList(name)){
                 System.out.println(curBlock);
                 System.out.println("5000");
+                System.out.println(curBlock);
                 for(int i = 0; i < varList.size(); i++){
                     System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
                 }
@@ -893,6 +894,9 @@ public class Parse {
             if(!initCond){
                 bNum++;
                 curBlock = bNum -1;
+            }
+            else{
+                initCond = false;
             }
             while(true){
                 if(BlockItem()){
