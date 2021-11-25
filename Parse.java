@@ -18,6 +18,7 @@ public class Parse {
     public static boolean exit = false;
     public static int curBlock = 1;
     public static boolean initCond = false;
+    public static boolean inGlobal = true;
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -37,6 +38,9 @@ public class Parse {
     }
 
     public static void CompUnit(){
+        while(Decl()){
+            ;
+        }
         FuncDef();
     }
 
@@ -153,13 +157,20 @@ public class Parse {
                 if(!var.isConst){
                     exist_var = true;
                 }
-                Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
-                tmpStack.push("%" + (reg - 1));
+                if(var.isGlobal && var.isConst){
+                    System.out.println("yes");
+                    tmpStack.push(String.valueOf(var.getValue()));
+                }
+                else{
+                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
+                    tmpStack.push("%" + (reg - 1));
+                }
             }
             else{
                 for(int i = 0; i < varList.size(); i++){
                     System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
                 }
+                System.out.println(name);
                 System.out.println("10000");
                 System.exit(1);
             }
@@ -359,9 +370,17 @@ public class Parse {
                     System.exit(400);
                 }
                 String a = tmpStack.pop();
-                String tmpRegister = "%" + reg;
-                tmpStack.push(tmpRegister);
-                Main.out.append("\t%" + reg++ + " = mul i32 " + a + ", " + b + "\n" );
+                if(inGlobal && !a.substring(0,1).equals("%")&&!b.substring(0,1).equals("%")){
+                    int a1 = Integer.valueOf(a);
+                    int b1 = Integer.valueOf(b);
+                    int c = a1 * b1;
+                    tmpStack.push(String.valueOf(c));
+                }
+                else{
+                    String tmpRegister = "%" + reg;
+                    tmpStack.push(tmpRegister);
+                    Main.out.append("\t%" + reg++ + " = mul i32 " + a + ", " + b + "\n" );
+                }
                 if(MulExp0()){
                     return true;
                 }
@@ -387,9 +406,17 @@ public class Parse {
                     System.exit(600);
                 }
                 String a = tmpStack.pop();
-                String tmpRegister = "%" + reg;
-                tmpStack.push(tmpRegister);
-                Main.out.append("\t%" + reg++ + " = sdiv i32 " + a + ", " + b + "\n");
+                if(inGlobal && !a.substring(0,1).equals("%")&&!b.substring(0,1).equals("%")){
+                    int a1 = Integer.valueOf(a);
+                    int b1 = Integer.valueOf(b);
+                    int c = a1 / b1;
+                    tmpStack.push(String.valueOf(c));
+                }
+                else{
+                    String tmpRegister = "%" + reg;
+                    tmpStack.push(tmpRegister);
+                    Main.out.append("\t%" + reg++ + " = sdiv i32 " + a + ", " + b + "\n");
+                }
                 if(MulExp0()){
                     return true;
                 }
@@ -415,9 +442,17 @@ public class Parse {
                     System.exit(800);
                 }
                 String a = tmpStack.pop();
-                String tmpRegister = "%" + reg;
-                tmpStack.push(tmpRegister);
-                Main.out.append("\t%" + reg++ + " = srem i32 " + a + ", " + b + "\n");
+                if(inGlobal && !a.substring(0,1).equals("%")&&!b.substring(0,1).equals("%")){
+                    int a1 = Integer.valueOf(a);
+                    int b1 = Integer.valueOf(b);
+                    int c = a1 % b1;
+                    tmpStack.push(String.valueOf(c));
+                }
+                else{
+                    String tmpRegister = "%" + reg;
+                    tmpStack.push(tmpRegister);
+                    Main.out.append("\t%" + reg++ + " = srem i32 " + a + ", " + b + "\n");
+                }
                 if(MulExp0()){
                     return true;
                 }
@@ -488,9 +523,17 @@ public class Parse {
                     System.exit(1000);
                 }
                 String a = tmpStack.pop();
-                String tmpRegister = "%" + reg;
-                tmpStack.push(tmpRegister);
-                Main.out.append("\t%" + reg++ + " = sub i32 " + a + ", " + b +"\n");
+                if(inGlobal && !a.substring(0,1).equals("%")&&!b.substring(0,1).equals("%")){
+                    int a1 = Integer.valueOf(a);
+                    int b1 = Integer.valueOf(b);
+                    int c = a1 - b1;
+                    tmpStack.push(String.valueOf(c));
+                }
+                else{
+                    String tmpRegister = "%" + reg;
+                    tmpStack.push(tmpRegister);
+                    Main.out.append("\t%" + reg++ + " = sub i32 " + a + ", " + b +"\n");
+                }
                 if(AddExp0()){
                     return true;
                 }
@@ -516,9 +559,17 @@ public class Parse {
                     System.exit(1200);
                 }
                 String a = tmpStack.pop();
-                String tmpRegister = "%" + reg;
-                tmpStack.push(tmpRegister);
-                Main.out.append("\t%" + reg++ + " = add i32 " + a + ", " + b +"\n");
+                if(inGlobal && !a.substring(0,1).equals("%")&&!b.substring(0,1).equals("%")){
+                    int a1 = Integer.valueOf(a);
+                    int b1 = Integer.valueOf(b);
+                    int c = a1 + b1;
+                    tmpStack.push(String.valueOf(c));
+                }
+                else{
+                    String tmpRegister = "%" + reg;
+                    tmpStack.push(tmpRegister);
+                    Main.out.append("\t%" + reg++ + " = add i32 " + a + ", " + b +"\n");
+                }
                 if(AddExp0()){
                     return true;
                 }
@@ -553,10 +604,25 @@ public class Parse {
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = ConstInitval()) != null && !exist_var){
-                    Var var = new Var("%x" + varList.size(), name, true, curBlock);
-                    varList.add(var);
-                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
-                    Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
+                    if(inGlobal){
+                        if(noSameGloabl(name)){
+                            Var var = new Var("@" + name, name, true, -2);
+                            var.setGlobal(true);
+                            var.setConst(true);
+                            var.setValue(Integer.valueOf(tmpRegister));
+                            varList.add(var);
+                        }
+                        else{
+                            System.out.println("this global var has been defined1");
+                            System.exit(1);
+                        }
+                    }
+                    else{
+                        Var var = new Var("%x" + varList.size(), name, true, curBlock);
+                        varList.add(var);
+                        Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
+                    }
                     return true;
                 }
                 else{
@@ -596,7 +662,14 @@ public class Parse {
                             break;
                         }
                     }
-                    return true;
+                   if(match(9)){
+                       return true;
+                   }
+                   else{
+                       System.out.println("213424");
+                       System.exit(1);
+                       return false;
+                   }
                 }
                 else{
                     src = id;
@@ -637,10 +710,34 @@ public class Parse {
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = InitVal()) != null){
-                    Var var = new Var("%x"+ varList.size(),name,false, curBlock);
-                    varList.add(var);
-                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
-                    Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
+                    if(inGlobal){
+                        if(noSameGloabl(name) && !exist_var){
+                            Var var = new Var("@" + name, name, false, -2);
+                            var.setGlobal(true);
+                            if(tmpRegister.substring(0,1).equals("%")){
+                                var.setValue(0);
+                            }
+                            else{
+                                var.setValue(Integer.valueOf(tmpRegister));
+                            }
+                            varList.add(var);
+                            Main.out.append(var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
+                        }
+                        else{
+//                            for(int i = 0; i < varList.size(); i++){
+//                                System.out.println(varList.get(i).getName() + " " + varList.get(i).isGlobal());
+//                            }
+//                            System.out.println(name);
+                            System.out.println("this globalvar has been defined2");
+                            System.exit(1);
+                        }
+                    }
+                    else{
+                        Var var = new Var("%x"+ varList.size(),name,false, curBlock);
+                        varList.add(var);
+                        Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
+                    }
                     return true;
                 }
                 else{
@@ -649,9 +746,24 @@ public class Parse {
                 }
             }
             else{
-                Var var = new Var("%x"+ varList.size(),name,false, curBlock);
-                varList.add(var);
-                Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                if(inGlobal){
+                    if(noSameGloabl(name)){
+                        Var var = new Var("@" + name, name, false, -2);
+                        var.setGlobal(true);
+                        var.setValue(0);
+                        varList.add(var);
+                        Main.out.append("\t" + var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
+                    }
+                    else{
+                        System.out.println("this globalvar has been defined3");
+                        System.exit(1);
+                    }
+                }
+                else{
+                    Var var = new Var("%x"+ varList.size(),name,false, curBlock);
+                    varList.add(var);
+                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                }
                 return true;
             }
         }
@@ -936,6 +1048,8 @@ public class Parse {
         int id = src;
         if(FuncType()){
             if(Main()){
+                Main.out.append("define dso_local i32 @main(){\n");
+                inGlobal = false;
                 if(match(5)){
                     if(match(6)){
                         Block();
@@ -956,6 +1070,8 @@ public class Parse {
             }
         }
         else{
+            System.out.println(Main.syms.get(src-1).getWord());
+            System.out.println(Main.syms.get(src).getWord());
             System.out.println("100004");
             System.exit(1);
         }
@@ -1242,6 +1358,16 @@ public class Parse {
                 varList.get(i).setBlockNum(-1);
             }
         }
+    }
+
+    public static boolean noSameGloabl(String name){
+        for(int i = 0; i < varList.size(); i++){
+            Var var = varList.get(i);
+            if(var.getName().equals(name) && var.isGlobal){
+                return false;
+            }
+        }
+        return true;
     }
 
 }
