@@ -954,6 +954,12 @@ public class Parse {
                                     }
                                     else{
                                         endJump.pop();
+                                        if(elseContinue){
+                                            elseContinue = false;
+                                        }
+                                        if(elseBreak){
+                                            elseBreak = false;
+                                        }
                                     }
                                     if(!ifContinue && !ifBreak){
                                         if(!exit){
@@ -965,6 +971,12 @@ public class Parse {
                                     }
                                     else{
                                         endJump.pop();
+                                        if(ifContinue){
+                                            ifContinue = false;
+                                        }
+                                        if(ifBreak){
+                                            ifBreak = false;
+                                        }
                                     }
                                     return true;
                                 }
