@@ -19,7 +19,15 @@ public class Parse {
     public static int curBlock = 1;
     public static boolean initCond = false;
     public static boolean inGlobal = true;
+    public static boolean isContinue = false;
+    public static boolean ifContinue = false;
+    public static boolean isBreak = false;
+    public static boolean ifBreak = false;
+    public static boolean elseBreak = false;
+    public static boolean elseContinue = false;
     public static Stack<Integer> whileJump = new Stack<>();
+    public static Stack<Integer> continueJump = new Stack<>();
+    public static Stack<String> breakJump = new Stack<>();
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -894,6 +902,7 @@ public class Parse {
                 return false;
             }
         }
+        //if-else
         else if(match(20)){
             if(match(5)){
                 String tmpCond = Cond();
@@ -907,6 +916,14 @@ public class Parse {
                         blockStack.push("%block" + (bNum - 1));
                         elseJump.push("block" + (bNum - 1));
                         if(Stmt()){
+                            if(isContinue){
+                                ifContinue = true;
+                                isContinue = false;
+                            }
+                            if(isBreak){
+                                ifBreak = true;
+                                isBreak = false;
+                            }
                             initCond = false;
                             removeBlockVar();
                             int tmpSize = Main.out.length();
@@ -918,18 +935,30 @@ public class Parse {
                                 initCond = true;
                                 curBlock = Integer.valueOf(tmp.substring(5,tmp.length()));
                                 if(Stmt()){
+                                    if(isContinue){
+                                        elseContinue = true;
+                                        isContinue = false;
+                                    }
+                                    if(isBreak){
+                                        elseBreak = true;
+                                        isBreak = false;
+                                    }
                                     removeBlockVar();
                                     initCond = false;
                                     endJump.push(Main.out.length());
                                     Main.out.append("block" + bNum++ + ":\n");
                                     curBlock = bNum - 1;
                                     blockStack.push("%block" + (bNum - 1));
-                                    Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
-                                    if(!exit){
+                                    if(!elseContinue || !elseBreak){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     }
-                                    else{
-                                        exit = false;
+                                    if(!ifContinue || !ifBreak){
+                                        if(!exit){
+                                            Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        }
+                                        else{
+                                            exit = false;
+                                        }
                                     }
                                     return true;
                                 }
@@ -944,7 +973,17 @@ public class Parse {
                                 Main.out.append(tmp+":\n\n");
                                 curBlock = Integer.valueOf(tmp.substring(5,tmp.length()));
                                 int t = endJump.pop();
-                                Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                if(ifContinue || ifBreak){
+                                    if(ifBreak){
+                                        ifBreak = false;
+                                    }
+                                    if(ifContinue){
+                                        ifContinue = false;
+                                    }
+                                }
+                                else{
+                                    Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                }
                                 return true;
                             }
                         }
@@ -968,9 +1007,11 @@ public class Parse {
                 return false;
             }
         }
+        //while循环
         else if(match(31)){
             Main.out.append("\tbr label %block" + bNum++ + "\n");
             Main.out.append("block" + (bNum-1) + ":\n");
+            continueJump.push(bNum-1);
             whileJump.push((bNum-1));
             if(match(5)){
                 String tmpCond = Cond();
@@ -978,9 +1019,20 @@ public class Parse {
                     if(match(6)){
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
                         elseJump.push("block"+(bNum-1));
+                        breakJump.push("block"+(bNum-1));
                         Main.out.append("block" + (bNum - 2) + ":\n");
                         if(Stmt()){
-                            Main.out.append("\tbr label %block" + whileJump.pop() + "\n");
+                            if(!isContinue && !isBreak){
+                                Main.out.append("\tbr label %block" + whileJump.pop() + "\n");
+                            }
+                            else{
+                                if(isContinue){
+                                    isContinue = false;
+                                }
+                                if(isBreak){
+                                    isBreak = false;
+                                }
+                            }
                             Main.out.append(elseJump.pop() + ":\n");
                             return true;
                         }
@@ -1004,8 +1056,11 @@ public class Parse {
                 return false;
             }
         }
+        //break
         else if(match(32)){
             if(match(9)){
+                isBreak = true;
+                Main.out.append("\tbr label %" + breakJump.pop() + "\n");
                 return true;
             }
             else{
@@ -1013,8 +1068,11 @@ public class Parse {
                 return false;
             }
         }
+        //continue
         else if(match(33)){
             if(match(9)){
+                Main.out.append("\tbr label %block" + continueJump.pop() + "\n");
+                isContinue = true;
                 return true;
             }
             else{
@@ -1077,7 +1135,11 @@ public class Parse {
                 ;
             }
             else{
-                System.out.println("8000");
+                for(int i = 0; i < varList.size(); i++){
+                    System.out.println(varList.get(i).getName());
+                }
+                System.out.println("80001");
+                System.out.println(Main.syms.get(src).getWord());
                 System.exit(1);
             }
         }
