@@ -1,5 +1,4 @@
 
-
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -494,7 +493,6 @@ public class Parse {
     }
 
     public static String AddExp(){
-        int id = src;
         if(MulExp()){
             if(AddExp0()){
                 if(tmpStack.size() != 0){
@@ -505,12 +503,10 @@ public class Parse {
                 }
             }
             else{
-                src = id;
                 return null;
             }
         }
         else{
-            src = id;
             return null;
         }
     }
@@ -1099,7 +1095,11 @@ public class Parse {
                 return false;
             }
         }
-        else if(Exp() != null){
+        else if(match(9)){
+            return true;
+        }
+        else{
+            String tmp = Exp();
             if(match(9)){
                 return true;
             }
@@ -1107,13 +1107,6 @@ public class Parse {
                 src = id;
                 return false;
             }
-        }
-        else if(match(9)){
-            return true;
-        }
-        else{
-            src = id;
-            return false;
         }
     }
 
