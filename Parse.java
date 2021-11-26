@@ -19,6 +19,7 @@ public class Parse {
     public static int curBlock = 1;
     public static boolean initCond = false;
     public static boolean inGlobal = true;
+    public static Stack<Integer> whileJump = new Stack<>();
     public static void parseAnalyse(){
        CompUnit();
     }
@@ -961,6 +962,60 @@ public class Parse {
                     src = id;
                     return false;
                 }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(31)){
+            Main.out.append("\tbr label %block" + bNum++ + "\n");
+            Main.out.append("block" + (bNum-1) + ":\n");
+            whileJump.push((bNum-1));
+            if(match(5)){
+                String tmpCond = Cond();
+                if(tmpCond != null){
+                    if(match(6)){
+                        Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
+                        elseJump.push("block"+(bNum-1));
+                        Main.out.append("block" + (bNum - 2) + ":\n");
+                        if(Stmt()){
+                            Main.out.append("\tbr label %block" + whileJump.pop() + "\n");
+                            Main.out.append(elseJump.pop() + ":\n");
+                            return true;
+                        }
+                        else{
+                            src = id;
+                            return false;
+                        }
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    src = id;
+                    return false;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(32)){
+            if(match(9)){
+                return true;
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else if(match(33)){
+            if(match(9)){
+                return true;
             }
             else{
                 src = id;
