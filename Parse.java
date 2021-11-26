@@ -20,11 +20,7 @@ public class Parse {
     public static boolean initCond = false;
     public static boolean inGlobal = true;
     public static boolean isContinue = false;
-    public static boolean ifContinue = false;
     public static boolean isBreak = false;
-    public static boolean ifBreak = false;
-    public static boolean elseBreak = false;
-    public static boolean elseContinue = false;
     public static Stack<Integer> whileJump = new Stack<>();
     public static Stack<Integer> continueJump = new Stack<>();
     public static Stack<String> breakJump = new Stack<>();
@@ -908,6 +904,8 @@ public class Parse {
                 String tmpCond = Cond();
                 if(tmpCond != null){
                     if(match(6)){
+                        boolean ifContinue = false;
+                        boolean ifBreak = false;
                         initCond = true;
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
                         Main.out.append("block" + (bNum-2) + ":\n");
@@ -929,6 +927,8 @@ public class Parse {
                             int tmpSize = Main.out.length();
                             endJump.push(tmpSize);
                             if(match(21)){
+                                boolean elseContinue = false;
+                                boolean elseBreak = false;
 //                                Main.out.append(elseJump.pop() + ":\n");
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n");
@@ -954,12 +954,12 @@ public class Parse {
                                     }
                                     else{
                                         endJump.pop();
-                                        if(elseContinue){
-                                            elseContinue = false;
-                                        }
-                                        if(elseBreak){
-                                            elseBreak = false;
-                                        }
+//                                        if(elseContinue){
+//                                            elseContinue = false;
+//                                        }
+//                                        if(elseBreak){
+//                                            elseBreak = false;
+//                                        }
                                     }
                                     if(!ifContinue && !ifBreak){
                                         if(!exit){
@@ -971,12 +971,12 @@ public class Parse {
                                     }
                                     else{
                                         endJump.pop();
-                                        if(ifContinue){
-                                            ifContinue = false;
-                                        }
-                                        if(ifBreak){
-                                            ifBreak = false;
-                                        }
+//                                        if(ifContinue){
+//                                            ifContinue = false;
+//                                        }
+//                                        if(ifBreak){
+//                                            ifBreak = false;
+//                                        }
                                     }
                                     return true;
                                 }
@@ -992,12 +992,13 @@ public class Parse {
                                 curBlock = Integer.valueOf(tmp.substring(5,tmp.length()));
                                 int t = endJump.pop();
                                 if(ifContinue || ifBreak){
-                                    if(ifBreak){
-                                        ifBreak = false;
-                                    }
-                                    if(ifContinue){
-                                        ifContinue = false;
-                                    }
+                                    ;
+//                                    if(ifBreak){
+//                                        ifBreak = false;
+//                                    }
+//                                    if(ifContinue){
+//                                        ifContinue = false;
+//                                    }
                                 }
                                 else{
                                     Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
