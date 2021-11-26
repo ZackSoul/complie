@@ -310,6 +310,9 @@ public class Lexer {
         reserve.add("const");
         reserve.add("if");
         reserve.add("else");
+        reserve.add("while");
+        reserve.add("break");
+        reserve.add("continue");
     }
 
     public static void setFunction(){
