@@ -4,6 +4,7 @@ public class Word {
     //type表示各终结符类型，0-过滤符,1-int,2-main,3-return,4-数字,5-(,6-),7-{,8-},9-;,10--,
     // 11-+,12-*,13-/,14-%,15-const,16-, 17-标识符,18-=,19-函数名，20-if,21-else
     //22-!,23-==,24-!=,25-<,26->,27-<=,28->=,29-||,30-&&
+    //31-while,32-break,33-continue
     public int type;
 
     public String word;
@@ -123,6 +124,18 @@ public class Word {
         }
         else if(this.word.equals("&&")){
             this.type = 30;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("while")){
+            this.type = 31;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("break")){
+            this.type = 32;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("continue")){
+            this.type = 33;
             this.outPut = this.word;
         }
         else if(Lexer.isFilter(this.word.charAt(0))){
