@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -951,6 +952,9 @@ public class Parse {
                                     if(!elseContinue && !elseBreak){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     }
+                                    else{
+                                        endJump.pop();
+                                    }
                                     if(!ifContinue && !ifBreak){
                                         if(!exit){
                                             Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
@@ -958,6 +962,9 @@ public class Parse {
                                         else{
                                             exit = false;
                                         }
+                                    }
+                                    else{
+                                        endJump.pop();
                                     }
                                     return true;
                                 }
@@ -1025,6 +1032,7 @@ public class Parse {
                                 Main.out.append("\tbr label %block" + whileJump.pop() + "\n");
                             }
                             else{
+                                whileJump.pop();
                                 if(isContinue){
                                     isContinue = false;
                                 }
