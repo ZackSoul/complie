@@ -1045,7 +1045,6 @@ public class Parse {
                                 Main.out.append("\tbr label %block" + whileJump.pop() + "\n");
                             }
                             else{
-                                whileJump.pop();
                                 if(isContinue){
                                     isContinue = false;
                                 }
