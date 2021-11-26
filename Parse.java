@@ -948,10 +948,10 @@ public class Parse {
                                     Main.out.append("block" + bNum++ + ":\n");
                                     curBlock = bNum - 1;
                                     blockStack.push("%block" + (bNum - 1));
-                                    if(!elseContinue || !elseBreak){
+                                    if(!elseContinue && !elseBreak){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     }
-                                    if(!ifContinue || !ifBreak){
+                                    if(!ifContinue && !ifBreak){
                                         if(!exit){
                                             Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                         }
