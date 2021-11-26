@@ -1196,7 +1196,15 @@ public class Parse {
 
     public static String Cond(){
         if(LOrExp()){
-            return condStack.pop();
+            if(condStack.size() == 0){
+                String tmpString = tmpStack.pop();
+                Main.out.append("\t%" + reg++ + " = sub i32 " + tmpString +", 0\n");
+                Main.out.append("\t%cond" + condNum++ + " = icmp sgt i32 "+ "%" + (reg-2) +", 0\n");
+                return "%cond" + (condNum - 1);
+            }
+            else{
+                return condStack.pop();
+            }
         }
         else{
             return null;
