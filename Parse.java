@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -1048,6 +1049,12 @@ public class Parse {
                                     isBreak = false;
                                 }
                             }
+                            if(breakJump.size() != 0){
+                                breakJump.pop();
+                            }
+                            if(continueJump.size() != 0){
+                                continueJump.pop();
+                            }
                             Main.out.append(elseJump.pop() + ":\n");
                             return true;
                         }
@@ -1075,7 +1082,7 @@ public class Parse {
         else if(match(32)){
             if(match(9)){
                 isBreak = true;
-                Main.out.append("\tbr label %" + breakJump.pop() + "\n");
+                Main.out.append("\tbr label %" + breakJump.peek() + "\n");
                 return true;
             }
             else{
@@ -1086,7 +1093,7 @@ public class Parse {
         //continue
         else if(match(33)){
             if(match(9)){
-                Main.out.append("\tbr label %block" + continueJump.pop() + "\n");
+                Main.out.append("\tbr label %block" + continueJump.peek() + "\n");
                 isContinue = true;
                 return true;
             }
