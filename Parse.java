@@ -859,7 +859,19 @@ public class Parse {
             }
             else{
                 src = id;
-                return false;
+                if(Exp() != null){
+                    if(match(9)){
+                        return true;
+                    }
+                    else{
+                        src = id;
+                        return false;
+                    }
+                }
+                else{
+                    src = id;
+                    return false;
+                }
             }
         }
         else if(match(7)){
@@ -1102,11 +1114,7 @@ public class Parse {
                 return false;
             }
         }
-        else if(match(9)){
-            return true;
-        }
-        else{
-            String tmp = Exp();
+        else if(Exp() != null){
             if(match(9)){
                 return true;
             }
@@ -1114,6 +1122,13 @@ public class Parse {
                 src = id;
                 return false;
             }
+        }
+        else if(match(9)){
+            return true;
+        }
+        else{
+            src = id;
+            return false;
         }
     }
 
