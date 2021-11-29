@@ -31,7 +31,8 @@ public class Main {
         out.append("declare i32 @getint()\n" +
                 "declare void @putint(i32)\n" +
                 "declare i32 @getch()\n" +
-                "declare void @putch(i32)\n");
+                "declare void @putch(i32)\n" +
+                "declare void @memset(i32*  ,i32 ,i32 )\n");
         Parse.parseAnalyse();
         out.append("\n}");
 
