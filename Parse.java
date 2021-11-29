@@ -1,6 +1,7 @@
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 public class Parse {
@@ -21,6 +22,7 @@ public class Parse {
     public static boolean inGlobal = true;
     public static boolean isContinue = false;
     public static boolean isBreak = false;
+    public static int ptrNum = 1;
     public static Stack<Integer> whileJump = new Stack<>();
     public static Stack<Integer> continueJump = new Stack<>();
     public static Stack<String> breakJump = new Stack<>();
@@ -84,7 +86,49 @@ public class Parse {
 
     public static String ConstInitval(){
         int id = src;
-        return ConstExp();
+        StringBuilder str = new StringBuilder();
+        if(match(7)){
+            if(match(8)){
+                return "empty_";
+            }
+            else{
+                String tmp = ConstInitval();
+                if(tmp != null){
+                    str.append(tmp);
+//                    String[] str1 = str.toString().split(" ");
+//                    var.setArr1(Arrays.asList(str1));
+                    while(match(16)){
+                        String tmp1 = ConstInitval();
+                        if(tmp1 != null){
+                            str.append(" " + tmp1);
+                        }
+                        else{
+                            System.out.println("78");
+                            System.exit(1);
+                            return null;
+                        }
+                    }
+                    if(match(8)){
+                        str.append("_");
+                        return str.toString();
+                    }
+                    else{
+                        System.out.println(Main.syms.get(src).getWord());
+                        System.out.println("451");
+                        System.exit(1);
+                        return null;
+                    }
+                }
+                else{
+                    System.out.println("1001010");
+                    System.exit(1);
+                    return null;
+                }
+            }
+        }
+        else {
+            return ConstExp();
+        }
     }
 
     public static boolean Number(){
@@ -118,20 +162,71 @@ public class Parse {
         }
     }
 
-    public static boolean LVal(){
+    public static int LVal(){
         int id = src;
-//        String name = Main.syms.get(src).getWord();
         if(Ident()){
-            return true;
+            String name = Main.syms.get(src-1).getWord();
+            Var var = getVarByName(name);
+            ArrayList<String> tmps = new ArrayList<>();
+            int dimens = 0;
+            while(match(34)){
+                String tmpString = Exp();
+                if(match(35)){
+                    dimens++;
+                     tmps.add(tmpString);
+                }
+                else{
+                    System.out.println("wdf");
+                    System.exit(1);
+                    return -1;
+                }
+            }
+            if(dimens != var.getDimension()){
+                System.out.println("维数错误");
+                System.exit(1);
+                return -1;
+            }
+            else{
+                if(dimens == 0){
+                    return id;
+                }
+                else if(dimens == 1){
+                    Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
+                    if(var.isGlobal){
+                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
+                        var.setPtr("%ptr"+(ptrNum-1));
+                    }
+                    Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
+                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
+                    tmpStack.push("%"+(reg-1));
+                    return -2;
+                }
+                else if(dimens == 2){
+                    Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
+                    Main.out.append("\t%" + reg++ + " = mul i32 %" + (reg-2) + ", " + var.getY() + "\n");
+                    Main.out.append("\t%" + reg++ + " = add i32 %" + (reg-2) + ", " + tmps.get(1) + "\n");
+                    if(var.isGlobal){
+                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() + " x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() +" x i32], [" + var.getY() +" x i32]* "+ "%ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
+                        var.setPtr("%ptr"+(ptrNum-1));
+                    }
+                    Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
+                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
+                    tmpStack.push("%"+(reg-1));
+                    return -2;
+                }
+            }
         }
         else{
             src = id;
-            return false;
+            return -1;
         }
+        return -1;
     }
 
     public static boolean PrimaryExp(){
         int id = src;
+        int x;
         if(match(5)){
             String tmpRegister;
             if((tmpRegister = Exp()) != null){
@@ -155,31 +250,43 @@ public class Parse {
                 return false;
             }
         }
-        else if(LVal()){
-            String name = Main.syms.get(src - 1).getWord();
-            if(inVarList(name)){
-                Var var = getVarByName(name);
-                if(!var.isConst){
-                    exist_var = true;
-                }
-                if(var.isGlobal && var.isConst){
-                    System.out.println("yes");
-                    tmpStack.push(String.valueOf(var.getValue()));
+        else if(( x = LVal()) != -1){
+            if(x != -2){
+                String name = Main.syms.get(x).getWord();
+                System.out.println(name);
+                Var tmpVar = getVarByName(name);
+                if(tmpVar.isArray){
+                    return true;
                 }
                 else{
-                    Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
-                    tmpStack.push("%" + (reg - 1));
+                    if(inVarList(name)){
+                        Var var = getVarByName(name);
+                        if(!var.isConst){
+                            exist_var = true;
+                        }
+                        if(var.isGlobal && var.isConst){
+                            System.out.println("yes");
+                            tmpStack.push(String.valueOf(var.getValue()));
+                        }
+                        else{
+                            Main.out.append("\t%" + reg++ +" = load i32, i32* " + var.getRegister() +"\n");
+                            tmpStack.push("%" + (reg - 1));
+                        }
+                    }
+                    else{
+                        for(int i = 0; i < varList.size(); i++){
+                            System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+                        }
+                        System.out.println(name);
+                        System.out.println("10000");
+                        System.exit(1);
+                    }
+                    return true;
                 }
             }
             else{
-                for(int i = 0; i < varList.size(); i++){
-                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
-                }
-                System.out.println(name);
-                System.out.println("10000");
-                System.exit(1);
+                return true;
             }
-            return true;
         }
         else if(Number()){
             tmpStack.push(Main.syms.get(src-1).getWord());
@@ -597,33 +704,166 @@ public class Parse {
 
     public static boolean ConstDef(){
         int id = src;
+        int dimension = 0;
+        boolean isArray = false;
         if(Ident()){
             String name = Main.syms.get(src - 1).getWord();
             if(inBlockVarList(name)){
                 System.out.println("3000");
                 System.exit(1);
             }
+            ArrayList<String> tmps = new ArrayList<>();
+            while(match(34)){
+                String tmp = ConstExp();
+                if(tmp != null){
+                    tmps.add(tmp);
+                    if(match(35)){
+                        isArray = true;
+                        dimension++;
+                    }
+                    else{
+                        System.out.println("2324341");
+                        System.exit(1);
+                        return false;
+                    }
+                }
+                else{
+                    System.out.println("232434");
+                    System.exit(1);
+                    return false;
+                }
+            }
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = ConstInitval()) != null && !exist_var){
-                    if(inGlobal){
-                        if(noSameGloabl(name)){
-                            Var var = new Var("@" + name, name, true, -2);
-                            var.setGlobal(true);
-                            var.setConst(true);
-                            var.setValue(Integer.valueOf(tmpRegister));
-                            varList.add(var);
-                        }
-                        else{
-                            System.out.println("this global var has been defined1");
-                            System.exit(1);
+                    if(isArray){
+                        if(inGlobal){
+                            if(noSameGloabl(name)){
+                                Var var = new Var("@" + name, name, true, -2,true,true,dimension);
+                                varList.add(var);
+                                System.out.println(tmpRegister);
+                                if(tmpRegister.equals("empty_")){
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                                }
+                                else{
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                                }
+                                if(dimension == 1){
+                                    int num = Integer.valueOf(tmps.get(0));
+                                    var.setY(num);
+                                    var.setX(1);
+                                    StringBuilder dimen1 = new StringBuilder();
+                                    dimen1.append(tmpRegister);
+                                    if(tmpRegister.equals("empty")){
+                                        dimen1.setLength(0);
+                                        for(int i = 0; i < var.getY(); i++){
+                                            dimen1.append(" 0");
+                                        }
+                                        dimen1.deleteCharAt(0);
+                                    }
+                                    String[] items = dimen1.toString().split(" ");
+                                    for(int i = 0; i< items.length; i++){
+                                        System.out.println(items[i]);
+                                    }
+                                    Main.out.append(var.getRegister() +" = dso_local constant" + " [" + tmps.get(0) + " x i32] [");
+                                    int realNum = items.length;
+                                    for(int i = 0; i < realNum; i++){
+                                        if(i == num -1){
+                                            Main.out.append(" i32 " + items[i] + "]\n");
+                                        }
+                                        else{
+                                            Main.out.append(" i32 "+ items[i] + ",");
+                                        }
+                                    }
+                                    for(int i = realNum; i < num; i++){
+                                        if(i == num -1){
+                                            Main.out.append(" i32 "+ 0 + "]\n");
+                                        }
+                                        else{
+                                            Main.out.append(" i32 "+ 0 + ",");
+                                        }
+                                    }
+                                }
+                                else if(dimension == 2){
+                                    var.setX(Integer.valueOf(tmps.get(0)));
+                                    var.setY(Integer.valueOf(tmps.get(1)));
+                                    System.out.println(tmpRegister);
+                                    String[] tmpSplit = tmpRegister.split("_ ");
+                                    Main.out.append(var.getRegister() + " = dso_local constant ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
+                                    for(int i = 0; i < tmpSplit.length; i++){
+                                        if(tmpSplit[i].equals("empty")){
+//                                            ArrayList<String> tmp = new ArrayList<>();
+//                                            for(int j = 0; j < var.getY(); j++){
+//                                                tmp.add("0");
+//                                                System.out.println(tmp.get(j));
+//                                            }
+//                                            System.out.println("num = " + tmp.size());
+                                            Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
+                                        }
+                                        else{
+                                            Main.out.append("[" + var.getY() + " x i32] [");
+                                            String[] tmp = tmpSplit[i].split(" ");
+                                            for(int j = 0; j < tmp.length; j++){
+                                                System.out.println(tmp[j]);
+                                                if(j == var.getY() - 1){
+                                                    if(i == var.getX() - 1){
+                                                        Main.out.append("i32 " + tmp[j] + "]]\n");
+                                                    }
+                                                    else{
+                                                        Main.out.append("i32 " + tmp[j] + "], ");
+                                                    }
+                                                }
+                                                else{
+                                                    Main.out.append("i32 " + tmp[j] + ", ");
+                                                }
+                                            }
+                                            for(int j = tmp.length; j < var.getY(); j++){
+                                                if(j == var.getY() - 1){
+                                                    Main.out.append("i32 " + 0 + "], ");
+                                                }
+                                                else{
+                                                    Main.out.append("i32 " + 0 + ", ");
+                                                }
+                                            }
+                                            System.out.println("num = " + tmp.length);
+                                            System.out.println("=============");
+                                        }
+
+                                    }
+                                    for(int i = tmpSplit.length; i < var.getX(); i++){
+                                        if(i == var.getX()-1){
+                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer]\n");
+                                        }
+                                        else{
+                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer], \n");
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                System.out.println("this global var has been defined1");
+                                System.exit(1);
+                            }
                         }
                     }
                     else{
-                        Var var = new Var("%x" + varList.size(), name, true, curBlock);
-                        varList.add(var);
-                        Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
-                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
+                        if(inGlobal){
+                            if(noSameGloabl(name)){
+                                Var var = new Var("@" + name, name, true, -2,true,false,0);
+                                var.setValue(Integer.valueOf(tmpRegister));
+                                varList.add(var);
+                            }
+                            else{
+                                System.out.println("this global var has been defined1");
+                                System.exit(1);
+                            }
+                        }
+                        else{
+                            Var var = new Var("%x" + varList.size(), name, true, curBlock,false,false,0);
+                            varList.add(var);
+                            Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                            Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister() +"\n");
+                        }
                     }
                     return true;
                 }
@@ -656,7 +896,8 @@ public class Parse {
                                 ;
                             }
                             else{
-                                src = id;
+                                System.out.println("333");
+                                System.exit(1);
                                 return false;
                             }
                         }
@@ -691,54 +932,288 @@ public class Parse {
 
     public static String InitVal(){
         int id = src;
-        return Exp();
+        StringBuilder str = new StringBuilder();
+        if(match(7)){
+            if(match(8)){
+                return "empty_";
+            }
+            else{
+                String tmp = InitVal();
+                if(tmp != null){
+                    str.append(tmp);
+                    while(match(16)){
+                        String tmp1 = InitVal();
+                        if(tmp1 != null){
+                            str.append(" " + tmp1);
+                        }
+                        else {
+                            System.out.println("21233");
+                            System.exit(1);
+                            return null;
+                        }
+                    }
+                    if(match(8)){
+                        str.append("_");
+                        return str.toString();
+                    }
+                    else{
+                        System.out.println("1209");
+                        System.exit(1);
+                        return null;
+                    }
+                }
+                else{
+                    System.out.println("12123");
+                    System.exit(1);
+                    return null;
+                }
+            }
+        }
+        else{
+            return Exp();
+        }
     }
 
     public static boolean VarDef(){
         int id = src;
+        int dimension = 0;
+        boolean isArray = false;
         if(Ident()){
             String name = Main.syms.get(src-1).getWord();
             if(inBlockVarList(name)){
-                System.out.println(curBlock);
                 System.out.println("5000");
-                System.out.println(curBlock);
-                for(int i = 0; i < varList.size(); i++){
-                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
-                }
-                System.out.println("=======================================");
-                System.out.println(getVarByName(name).getName() + " " + getVarByName(name).getBlockNum());
                 System.exit(1);
+            }
+            ArrayList<String> tmps = new ArrayList<>();
+            while(match(34)){
+                String tmp = ConstExp();
+                if(tmp != null){
+                    tmps.add(tmp);
+                    if(match(35)){
+                        isArray = true;
+                        dimension++;
+                    }
+                    else{
+                        System.out.println("7778");
+                        System.exit(1);
+                        return false;
+                    }
+                }
+                else{
+                    System.out.println("777");
+                    System.exit(1);
+                    return false;
+                }
             }
             if(match(18)){
                 String tmpRegister;
                 if((tmpRegister = InitVal()) != null){
-                    if(inGlobal){
-                        if(noSameGloabl(name) && !exist_var){
-                            Var var = new Var("@" + name, name, false, -2);
-                            var.setGlobal(true);
-                            if(tmpRegister.substring(0,1).equals("%")){
-                                var.setValue(0);
+                    if(isArray){
+                        if(inGlobal){
+                            if(noSameGloabl(name)){
+                                Var var = new Var("@" + name, name, false, -2,true,true,dimension);
+                                varList.add(var);
+                                System.out.println(tmpRegister);
+                                if(tmpRegister.equals("empty_")){
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                                }
+                                else{
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                                }
+                                if(dimension == 1){
+                                    int num = Integer.valueOf(tmps.get(0));
+                                    var.setY(num);
+                                    var.setX(1);
+                                    StringBuilder dimen1 = new StringBuilder();
+                                    dimen1.append(tmpRegister);
+                                    if(tmpRegister.equals("empty")){
+                                        dimen1.setLength(0);
+                                        for(int i = 0; i < var.getY(); i++){
+                                            dimen1.append(" 0");
+                                        }
+                                        dimen1.deleteCharAt(0);
+                                    }
+                                    String[] items = dimen1.toString().split(" ");
+                                    Main.out.append(var.getRegister() +" = dso_local global" + " [" + tmps.get(0) + " x i32] [");
+                                    int realNum = items.length;
+                                    for(int i = 0; i < realNum; i++){
+                                        if(i == num -1){
+                                            Main.out.append(" i32 " + items[i] + "]\n");
+                                        }
+                                        else{
+                                            Main.out.append("i32 "+ items[i] + ", ");
+                                        }
+                                    }
+                                    for(int i = realNum; i < num; i++){
+                                        if(i == num -1){
+                                            Main.out.append(" i32 "+ 0 + "]\n");
+                                        }
+                                        else{
+                                            Main.out.append(" i32 "+ 0 + ",");
+                                        }
+                                    }
+                                }
+                                else if(dimension == 2){
+                                    var.setX(Integer.valueOf(tmps.get(0)));
+                                    var.setY(Integer.valueOf(tmps.get(1)));
+                                    System.out.println(tmpRegister);
+                                    String[] tmpSplit = tmpRegister.split("_ ");
+                                    Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
+                                    for(int i = 0; i < tmpSplit.length; i++){
+                                        if(tmpSplit[i].equals("empty")){
+//                                            ArrayList<String> tmp = new ArrayList<>();
+//                                            for(int j = 0; j < var.getY(); j++){
+//                                                tmp.add("0");
+//                                                System.out.println(tmp.get(j));
+//                                            }
+//                                            System.out.println("num = " + tmp.size());
+                                            Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
+                                        }
+                                        else{
+                                            Main.out.append("[" + var.getY() + " x i32] [");
+                                            String[] tmp = tmpSplit[i].split(" ");
+                                            for(int j = 0; j < tmp.length; j++){
+                                                System.out.println(tmp[j]);
+                                                if(j == var.getY() - 1){
+                                                    if(i == var.getX() - 1){
+                                                        Main.out.append("i32 " + tmp[j] + "]]\n");
+                                                    }
+                                                    else{
+                                                        Main.out.append("i32 " + tmp[j] + "], ");
+                                                    }
+                                                }
+                                                else{
+                                                    Main.out.append("i32 " + tmp[j] + ", ");
+                                                }
+                                            }
+                                            for(int j = tmp.length; j < var.getY(); j++){
+                                                if(j == var.getY() - 1){
+                                                    Main.out.append("i32 " + 0 + "], ");
+                                                }
+                                                else{
+                                                    Main.out.append("i32 " + 0 + ", ");
+                                                }
+                                            }
+                                            System.out.println("num = " + tmp.length);
+                                            System.out.println("=============");
+                                        }
+
+                                    }
+                                    for(int i = tmpSplit.length; i < var.getX(); i++){
+                                        if(i == var.getX()-1){
+                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer]\n");
+                                        }
+                                        else{
+                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer], \n");
+                                        }
+                                    }
+                                }
                             }
                             else{
-                                var.setValue(Integer.valueOf(tmpRegister));
+                                System.out.println("this global var has been defined1");
+                                System.exit(1);
                             }
-                            varList.add(var);
-                            Main.out.append(var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
                         }
                         else{
+                            Main.out.append("\t%ptr" + ptrNum++);
+                            Var var = new Var("%ptr" + (ptrNum-1), name, false, -2,false,true,dimension);
+                            varList.add(var);
+                            if(tmpRegister.equals("empty_")){
+                                tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                            }
+                            else{
+                                tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                            }
+                            if(dimension == 1){
+                                var.setX(1);
+                                var.setY(Integer.valueOf(tmps.get(0)));
+                                Main.out.append(" = alloca [" + var.getY() +" x i32]\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                var.setPtr("%ptr"+(ptrNum-1));
+                                StringBuilder dimen1 = new StringBuilder();
+                                dimen1.append(tmpRegister);
+                                if(tmpRegister.equals("empty")){
+                                    dimen1.setLength(0);
+                                    for(int i = 0; i < var.getY(); i++){
+                                        dimen1.append(" 0");
+                                    }
+                                    dimen1.deleteCharAt(0);
+                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")");
+                                }
+                                else{
+                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")");
+                                    String[] items = dimen1.toString().split(" ");
+                                    for(int i = 0; i < items.length; i++){
+//                                        if( i == 0){
+//                                            Main.out.append("\tstore i32 " + items[i] + ", i32* " + var.getPtr() + "\n");
+//                                        }
+//                                        else{
+                                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 " + i + "\n");
+                                        var.getElems().add("%ptr"+(ptrNum-1));
+                                        Main.out.append("\tstore i32 " + items[i] + ", i32* " + "%ptr" + (ptrNum - 1) + "\n");
+                                    }
+                                    for(int i = items.length; i < var.getY(); i++){
+                                        var.getElems().add("0");
+                                    }
+                                }
+                            }
+                            else if(dimension == 2){
+                                var.setX(Integer.valueOf(tmps.get(0)));
+                                var.setY(Integer.valueOf(tmps.get(1)));
+                                Main.out.append(" = alloca [" + var.getX() + " x [" + var.getY() +" x i32]]\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() +" x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* %ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
+                                var.setPtr("%ptr"+(ptrNum-1));
+                                Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getX()*var.getY()*4 + ")\n");
+                                String[] tmpSplit = tmpRegister.split("_ ");
+                                for(int i = 0; i < tmpSplit.length; i++){
+                                    String[] tmp = tmpSplit[i].split(" ");
+                                    for(int j = 0; j < tmp.length; j++){
+//                                        if(i == 0 && j == 0){
+//                                            Main.out.append("\tstore i32 " + tmp[j] + ", i32* " + var.getPtr() + "\n");
+//                                            var.getElems().add("%ptr"+(ptrNum-1));
+//                                        }
+//                                        else{
+                                            Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 " + (var.getY()*i+j) + "\n");
+                                            var.getElems().add("%ptr"+(ptrNum-1));
+                                            Main.out.append("\tstore i32 " + tmp[j] + ", i32* " + "%ptr" + (ptrNum - 1) + "\n");
+                                    }
+                                    for(int j = tmp.length; j < var.getY(); j++){
+                                        var.getElems().add("0");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        if(inGlobal){
+                            if(noSameGloabl(name) && !exist_var){
+                                Var var = new Var("@" + name, name, false, -2,true,false,0);
+                                var.setGlobal(true);
+                                if(tmpRegister.substring(0,1).equals("%")){
+                                    var.setValue(0);
+                                }
+                                else{
+                                    var.setValue(Integer.valueOf(tmpRegister));
+                                }
+                                varList.add(var);
+                                Main.out.append(var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
+                            }
+                            else{
 //                            for(int i = 0; i < varList.size(); i++){
 //                                System.out.println(varList.get(i).getName() + " " + varList.get(i).isGlobal());
 //                            }
 //                            System.out.println(name);
-                            System.out.println("this globalvar has been defined2");
-                            System.exit(1);
+                                System.out.println("this globalvar has been defined2");
+                                System.exit(1);
+                            }
                         }
-                    }
-                    else{
-                        Var var = new Var("%x"+ varList.size(),name,false, curBlock);
-                        varList.add(var);
-                        Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
-                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
+                        else{
+                            Var var = new Var("%x"+ varList.size(),name,false, curBlock,false,false,0);
+                            varList.add(var);
+                            Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                            Main.out.append("\tstore i32 " + tmpRegister +", i32* " + var.getRegister()+"\n");
+                        }
                     }
                     return true;
                 }
@@ -748,23 +1223,48 @@ public class Parse {
                 }
             }
             else{
-                if(inGlobal){
-                    if(noSameGloabl(name)){
-                        Var var = new Var("@" + name, name, false, -2);
-                        var.setGlobal(true);
-                        var.setValue(0);
-                        varList.add(var);
-                        Main.out.append("\t" + var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
-                    }
-                    else{
-                        System.out.println("this globalvar has been defined3");
-                        System.exit(1);
+                if(isArray){
+                    if(inGlobal){
+                        if(noSameGloabl(name)){
+                            Var var = new Var("@" + name, name, false, -2,true,true,dimension);
+                            varList.add(var);
+                            if(dimension == 1){
+                                int num = Integer.valueOf(tmps.get(0));
+                                var.setY(num);
+                                var.setX(1);
+                                Main.out.append(var.getRegister() + " = dso_local global [" + var.getY() + " x i32] zeroinitializer\n");
+                            }
+                            else if(dimension == 2){
+                                var.setX(Integer.valueOf(tmps.get(0)));
+                                var.setY(Integer.valueOf(tmps.get(1)));
+                                Main.out.append(var.getRegister() + " = dso_local global [" + var.getX() + " x [" + var.getY() +" x i32]] zeroinitializer\n");
+                            }
+                        }
+                        else{
+                            System.out.println("this globalvar has been defined3");
+                            System.exit(1);
+                        }
                     }
                 }
                 else{
-                    Var var = new Var("%x"+ varList.size(),name,false, curBlock);
-                    varList.add(var);
-                    Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                    if(inGlobal){
+                        if(noSameGloabl(name)){
+                            Var var = new Var("@" + name, name, false, -2,true,false,0);
+                            var.setGlobal(true);
+                            var.setValue(0);
+                            varList.add(var);
+                            Main.out.append("\t" + var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
+                        }
+                        else{
+                            System.out.println("this globalvar has been defined3");
+                            System.exit(1);
+                        }
+                    }
+                    else{
+                        Var var = new Var("%x"+ varList.size(),name,false, curBlock,false,false,0);
+                        varList.add(var);
+                        Main.out.append("\t" + var.getRegister() + " = alloca i32\n");
+                    }
                 }
                 return true;
             }
@@ -827,25 +1327,32 @@ public class Parse {
 
     public static boolean Stmt(){
         int id = src;
-        if(LVal()){
-            String name = Main.syms.get(src-1).getWord();
-            if(getVarByName(name) == null){
-                for(int i = 0; i < varList.size(); i++){
-                    System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+        int x = LVal();
+        if(x != -1){
+            if(x != -2){
+                String name = Main.syms.get(x).getWord();
+                if(getVarByName(name) == null){
+                    for(int i = 0; i < varList.size(); i++){
+                        System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
+                    }
+                    System.out.println("6000");
+                    System.exit(1);
                 }
-                System.out.println("6000");
-                System.exit(1);
-            }
-            if(getVarByName(name).isConst){
-                System.out.println("7000");
-                System.exit(1);
-            }
-            if(match(18)){
-                String tmpRegister;
-                if((tmpRegister = Exp()) != null){
-                    if(match(9)){
-                        Main.out.append("\tstore i32 " + tmpRegister +", i32* " + getVarByName(name).getRegister() +"\n");
-                        return true;
+                if(getVarByName(name).isConst){
+                    System.out.println("7000");
+                    System.exit(1);
+                }
+                if(match(18)){
+                    String tmpRegister;
+                    if((tmpRegister = Exp()) != null){
+                        if(match(9)){
+                            Main.out.append("\tstore i32 " + tmpRegister +", i32* " + getVarByName(name).getRegister() +"\n");
+                            return true;
+                        }
+                        else{
+                            src = id;
+                            return false;
+                        }
                     }
                     else{
                         src = id;
@@ -854,25 +1361,22 @@ public class Parse {
                 }
                 else{
                     src = id;
-                    return false;
-                }
-            }
-            else{
-                src = id;
-                if(Exp() != null){
-                    if(match(9)){
-                        return true;
+                    if(Exp() != null){
+                        if(match(9)){
+                            return true;
+                        }
+                        else{
+                            src = id;
+                            return false;
+                        }
                     }
                     else{
                         src = id;
                         return false;
                     }
                 }
-                else{
-                    src = id;
-                    return false;
-                }
             }
+            return true;
         }
         else if(match(7)){
             src--;
