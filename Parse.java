@@ -1058,7 +1058,9 @@ public class Parse {
                                     var.setY(Integer.valueOf(tmps.get(1)));
                                     System.out.println(tmpRegister);
                                     String[] tmpSplit = tmpRegister.split("_ ");
-                                    Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
+                                    System.out.println(tmpSplit.length);
+                                    System.out.println(tmpSplit[0]);
+                                    Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] ");
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
 //                                            ArrayList<String> tmp = new ArrayList<>();
@@ -1067,7 +1069,12 @@ public class Parse {
 //                                                System.out.println(tmp.get(j));
 //                                            }
 //                                            System.out.println("num = " + tmp.size());
-                                            Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
+                                            if(tmpSplit.length == 1){
+                                                Main.out.append("zeroinitializer\n");
+                                            }
+                                            else{
+                                                Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
+                                            }
                                         }
                                         else{
                                             Main.out.append("[" + var.getY() + " x i32] [");
@@ -1099,12 +1106,13 @@ public class Parse {
                                         }
 
                                     }
-                                    for(int i = tmpSplit.length; i < var.getX(); i++){
-                                        if(i == var.getX()-1){
-                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer]\n");
-                                        }
-                                        else{
-                                            Main.out.append("[" + var.getY() +" x i32] zeroinitializer], \n");
+                                    if(!tmpSplit[0].equals("empty")) {
+                                        for (int i = tmpSplit.length; i < var.getX(); i++) {
+                                            if (i == var.getX() - 1) {
+                                                Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
+                                            } else {
+                                                Main.out.append("[" + var.getY() + " x i32] zeroinitializer], \n");
+                                            }
                                         }
                                     }
                                 }
