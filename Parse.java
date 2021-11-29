@@ -1,5 +1,4 @@
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
@@ -1077,7 +1076,7 @@ public class Parse {
                                             }
                                         }
                                         else{
-                                            Main.out.append("[" + var.getY() + " x i32] [");
+                                            Main.out.append("[[" + var.getY() + " x i32] [");
                                             String[] tmp = tmpSplit[i].split(" ");
                                             for(int j = 0; j < tmp.length; j++){
                                                 System.out.println(tmp[j]);
