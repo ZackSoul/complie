@@ -5,6 +5,7 @@ public class Word {
     // 11-+,12-*,13-/,14-%,15-const,16-, 17-标识符,18-=,19-函数名，20-if,21-else
     //22-!,23-==,24-!=,25-<,26->,27-<=,28->=,29-||,30-&&
     //31-while,32-break,33-continue
+    //34-[,35-]
     public int type;
 
     public String word;
@@ -136,6 +137,14 @@ public class Word {
         }
         else if(this.word.equals("continue")){
             this.type = 33;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("[")){
+            this.type = 34;
+            this.outPut = this.word;
+        }
+        else if(this.word.equals("]")){
+            this.type = 35;
             this.outPut = this.word;
         }
         else if(Lexer.isFilter(this.word.charAt(0))){
