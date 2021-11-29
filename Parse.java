@@ -1,5 +1,4 @@
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
@@ -742,13 +741,8 @@ public class Parse {
                                 Var var = new Var("@" + name, name, true, -2,true,true,dimension);
                                 varList.add(var);
                                 System.out.println(tmpRegister);
-                                if(tmpRegister.equals("empty_")){
-                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
-                                }
-                                else{
-                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
-                                }
                                 if(dimension == 1){
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                     int num = Integer.valueOf(tmps.get(0));
                                     var.setY(num);
                                     var.setX(1);
@@ -785,6 +779,12 @@ public class Parse {
                                     }
                                 }
                                 else if(dimension == 2){
+                                    if(tmpRegister.equals("empty_")){
+                                        tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                                    }
+                                    else{
+                                        tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                                    }
                                     var.setX(Integer.valueOf(tmps.get(0)));
                                     var.setY(Integer.valueOf(tmps.get(1)));
                                     System.out.println(tmpRegister);
@@ -1127,13 +1127,9 @@ public class Parse {
                             Main.out.append("\t%ptr" + ptrNum++);
                             Var var = new Var("%ptr" + (ptrNum-1), name, false, -2,false,true,dimension);
                             varList.add(var);
-                            if(tmpRegister.equals("empty_")){
-                                tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
-                            }
-                            else{
-                                tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
-                            }
+                            System.out.println(tmpRegister);
                             if(dimension == 1){
+                                tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                 var.setX(1);
                                 var.setY(Integer.valueOf(tmps.get(0)));
                                 Main.out.append(" = alloca [" + var.getY() +" x i32]\n");
@@ -1147,11 +1143,12 @@ public class Parse {
                                         dimen1.append(" 0");
                                     }
                                     dimen1.deleteCharAt(0);
-                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")");
+                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")\n");
                                 }
                                 else{
-                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")");
+                                    Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")\n");
                                     String[] items = dimen1.toString().split(" ");
+                                    System.out.println(items.length);
                                     for(int i = 0; i < items.length; i++){
 //                                        if( i == 0){
 //                                            Main.out.append("\tstore i32 " + items[i] + ", i32* " + var.getPtr() + "\n");
@@ -1167,6 +1164,12 @@ public class Parse {
                                 }
                             }
                             else if(dimension == 2){
+                                if(tmpRegister.equals("empty_")){
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                                }
+                                else{
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                                }
                                 var.setX(Integer.valueOf(tmps.get(0)));
                                 var.setY(Integer.valueOf(tmps.get(1)));
                                 Main.out.append(" = alloca [" + var.getX() + " x [" + var.getY() +" x i32]]\n");
@@ -1175,9 +1178,13 @@ public class Parse {
                                 var.setPtr("%ptr"+(ptrNum-1));
                                 Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getX()*var.getY()*4 + ")\n");
                                 String[] tmpSplit = tmpRegister.split("_ ");
-                                for(int i = 0; i < tmpSplit.length; i++){
-                                    String[] tmp = tmpSplit[i].split(" ");
-                                    for(int j = 0; j < tmp.length; j++){
+                                if(tmpSplit.length == 1 && tmpSplit[0].equals("empty")){
+                                    ;
+                                }
+                                else{
+                                    for(int i = 0; i < tmpSplit.length; i++){
+                                        String[] tmp = tmpSplit[i].split(" ");
+                                        for(int j = 0; j < tmp.length; j++){
 //                                        if(i == 0 && j == 0){
 //                                            Main.out.append("\tstore i32 " + tmp[j] + ", i32* " + var.getPtr() + "\n");
 //                                            var.getElems().add("%ptr"+(ptrNum-1));
@@ -1186,9 +1193,10 @@ public class Parse {
                                             Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 " + (var.getY()*i+j) + "\n");
                                             var.getElems().add("%ptr"+(ptrNum-1));
                                             Main.out.append("\tstore i32 " + tmp[j] + ", i32* " + "%ptr" + (ptrNum - 1) + "\n");
-                                    }
-                                    for(int j = tmp.length; j < var.getY(); j++){
-                                        var.getElems().add("0");
+                                        }
+                                        for(int j = tmp.length; j < var.getY(); j++){
+                                            var.getElems().add("0");
+                                        }
                                     }
                                 }
                             }
