@@ -293,6 +293,18 @@ public class Lexer {
                     Main.words.add(new Word("="));
                     break;
                 }
+                    case '[':
+                {
+                    Main.syms.add(new Word("["));
+                    Main.words.add(new Word("["));
+                    break;
+                }
+                case ']':
+                {
+                    Main.syms.add(new Word("]"));
+                    Main.words.add(new Word("]"));
+                    break;
+                }
                 default:
                 {
                     System.out.println(ch);
