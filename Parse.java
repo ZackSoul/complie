@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
@@ -1059,7 +1060,7 @@ public class Parse {
                                     String[] tmpSplit = tmpRegister.split("_ ");
                                     System.out.println(tmpSplit.length);
                                     System.out.println(tmpSplit[0]);
-                                    Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] ");
+                                    Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
 //                                            ArrayList<String> tmp = new ArrayList<>();
@@ -1069,6 +1070,7 @@ public class Parse {
 //                                            }
 //                                            System.out.println("num = " + tmp.size());
                                             if(tmpSplit.length == 1){
+                                                Main.out.deleteCharAt(Main.out.length()-1);
                                                 Main.out.append("zeroinitializer\n");
                                             }
                                             else{
@@ -1076,7 +1078,7 @@ public class Parse {
                                             }
                                         }
                                         else{
-                                            Main.out.append("[[" + var.getY() + " x i32] [");
+                                            Main.out.append("[" + var.getY() + " x i32] [");
                                             String[] tmp = tmpSplit[i].split(" ");
                                             for(int j = 0; j < tmp.length; j++){
                                                 System.out.println(tmp[j]);
