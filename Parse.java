@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
@@ -421,17 +422,22 @@ public class Parse {
                 }
                 String tmpRegister1 = tmpStack.pop();
                 if(num == -1){
-                    if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
-                        Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmpRegister1 +"\n");
-                        tmpStack.push("%" + (reg-1));
+                    if(inGlobal){
+                        tmpStack.push("-"+tmpRegister1);
                     }
                     else{
-                        Main.out.append("\t%" + reg++ + "= zext i1 " + tmpRegister1 + " to i32\n");
-                        String tmp = "%" + (reg - 1);
-                        Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmp +"\n");
-                        tmpStack.push("%"+(reg-1));
-                        Main.out.append("\t%cond" + condNum++ + " = icmp ne i32 " + tmpStack.peek() + ", 0\n");
-                        condStack.push("%cond"+(condNum-1));
+                        if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
+                            Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmpRegister1 +"\n");
+                            tmpStack.push("%" + (reg-1));
+                        }
+                        else{
+                            Main.out.append("\t%" + reg++ + "= zext i1 " + tmpRegister1 + " to i32\n");
+                            String tmp = "%" + (reg - 1);
+                            Main.out.append("\t%" + reg++ + " = sub i32 " + 0 + ", " + tmp +"\n");
+                            tmpStack.push("%"+(reg-1));
+                            Main.out.append("\t%cond" + condNum++ + " = icmp ne i32 " + tmpStack.peek() + ", 0\n");
+                            condStack.push("%cond"+(condNum-1));
+                        }
                     }
                 }
                 else if(num == 2){
@@ -860,6 +866,7 @@ public class Parse {
                         if(inGlobal){
                             if(noSameGloabl(name)){
                                 Var var = new Var("@" + name, name, true, -2,true,false,0);
+                                System.out.println(Main.out.toString());
                                 var.setValue(Integer.valueOf(tmpRegister));
                                 varList.add(var);
                             }
@@ -1024,13 +1031,8 @@ public class Parse {
                                 Var var = new Var("@" + name, name, false, -2,true,true,dimension);
                                 varList.add(var);
                                 System.out.println(tmpRegister);
-                                if(tmpRegister.equals("empty_")){
-                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
-                                }
-                                else{
-                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
-                                }
                                 if(dimension == 1){
+                                    tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                     int num = Integer.valueOf(tmps.get(0));
                                     var.setY(num);
                                     var.setX(1);
@@ -1064,6 +1066,12 @@ public class Parse {
                                     }
                                 }
                                 else if(dimension == 2){
+                                    if(tmpRegister.equals("empty_")){
+                                        tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
+                                    }
+                                    else{
+                                        tmpRegister = tmpRegister.substring(0,tmpRegister.length()-2);
+                                    }
                                     var.setX(Integer.valueOf(tmps.get(0)));
                                     var.setY(Integer.valueOf(tmps.get(1)));
                                     System.out.println(tmpRegister);
