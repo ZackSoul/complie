@@ -114,7 +114,6 @@ public class Parse {
                         return str.toString();
                     }
                     else{
-                        System.out.println(Main.syms.get(src).getWord());
                         System.out.println("451");
                         System.exit(1);
                         return null;
@@ -168,10 +167,6 @@ public class Parse {
         if(Ident()){
             String name = Main.syms.get(src-1).getWord();
             Var var = getVarByName(name);
-//            System.out.println(name);
-//            System.out.println(var.getDimension());
-////            System.out.println(Main.syms.get(src).getWord());
-////            System.out.println(Main.syms.get(src+1).getWord());
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
             while(match(34)){
@@ -257,7 +252,6 @@ public class Parse {
         else if(( x = LVal()) != -1){
             if(x != -2){
                 String name = Main.syms.get(x).getWord();
-                System.out.println(name);
                 Var tmpVar = getVarByName(name);
                 if(tmpVar.isArray){
                     return true;
@@ -269,7 +263,6 @@ public class Parse {
                             exist_var = true;
                         }
                         if(var.isGlobal && var.isConst){
-                            System.out.println("yes");
                             tmpStack.push(String.valueOf(var.getValue()));
                         }
                         else{
@@ -278,10 +271,6 @@ public class Parse {
                         }
                     }
                     else{
-                        for(int i = 0; i < varList.size(); i++){
-                            System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
-                        }
-                        System.out.println(name);
                         System.out.println("10000");
                         System.exit(1);
                     }
@@ -756,7 +745,6 @@ public class Parse {
                             if(noSameGloabl(name)){
                                 Var var = new Var("@" + name, name, true, -2,true,true,dimension);
                                 varList.add(var);
-                                System.out.println(tmpRegister);
                                 if(dimension == 1){
                                     tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                     int num = Integer.valueOf(tmps.get(0));
@@ -772,9 +760,6 @@ public class Parse {
                                         dimen1.deleteCharAt(0);
                                     }
                                     String[] items = dimen1.toString().split(" ");
-                                    for(int i = 0; i< items.length; i++){
-                                        System.out.println(items[i]);
-                                    }
                                     Main.out.append(var.getRegister() +" = dso_local constant" + " [" + tmps.get(0) + " x i32] [");
                                     int realNum = items.length;
                                     for(int i = 0; i < realNum; i++){
@@ -803,24 +788,16 @@ public class Parse {
                                     }
                                     var.setX(Integer.valueOf(tmps.get(0)));
                                     var.setY(Integer.valueOf(tmps.get(1)));
-                                    System.out.println(tmpRegister);
                                     String[] tmpSplit = tmpRegister.split("_ ");
                                     Main.out.append(var.getRegister() + " = dso_local constant ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
-//                                            ArrayList<String> tmp = new ArrayList<>();
-//                                            for(int j = 0; j < var.getY(); j++){
-//                                                tmp.add("0");
-//                                                System.out.println(tmp.get(j));
-//                                            }
-//                                            System.out.println("num = " + tmp.size());
                                             Main.out.append("[" + var.getY() + " x i32] zeroinitializer]\n");
                                         }
                                         else{
                                             Main.out.append("[" + var.getY() + " x i32] [");
                                             String[] tmp = tmpSplit[i].split(" ");
                                             for(int j = 0; j < tmp.length; j++){
-                                                System.out.println(tmp[j]);
                                                 if(j == var.getY() - 1){
                                                     if(i == var.getX() - 1){
                                                         Main.out.append("i32 " + tmp[j] + "]]\n");
@@ -841,8 +818,6 @@ public class Parse {
                                                     Main.out.append("i32 " + 0 + ", ");
                                                 }
                                             }
-                                            System.out.println("num = " + tmp.length);
-                                            System.out.println("=============");
                                         }
 
                                     }
@@ -866,7 +841,6 @@ public class Parse {
                         if(inGlobal){
                             if(noSameGloabl(name)){
                                 Var var = new Var("@" + name, name, true, -2,true,false,0);
-                                System.out.println(Main.out.toString());
                                 var.setValue(Integer.valueOf(tmpRegister));
                                 varList.add(var);
                             }
@@ -1030,7 +1004,6 @@ public class Parse {
                             if(noSameGloabl(name)){
                                 Var var = new Var("@" + name, name, false, -2,true,true,dimension);
                                 varList.add(var);
-                                System.out.println(tmpRegister);
                                 if(dimension == 1){
                                     tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                     int num = Integer.valueOf(tmps.get(0));
@@ -1074,19 +1047,11 @@ public class Parse {
                                     }
                                     var.setX(Integer.valueOf(tmps.get(0)));
                                     var.setY(Integer.valueOf(tmps.get(1)));
-                                    System.out.println(tmpRegister);
                                     String[] tmpSplit = tmpRegister.split("_ ");
-                                    System.out.println(tmpSplit.length);
-                                    System.out.println(tmpSplit[0]);
                                     Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
+                                    System.out.println(var.getName() + tmpSplit.length);
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
-//                                            ArrayList<String> tmp = new ArrayList<>();
-//                                            for(int j = 0; j < var.getY(); j++){
-//                                                tmp.add("0");
-//                                                System.out.println(tmp.get(j));
-//                                            }
-//                                            System.out.println("num = " + tmp.size());
                                             if(tmpSplit.length == 1){
                                                 Main.out.deleteCharAt(Main.out.length()-1);
                                                 Main.out.append("zeroinitializer\n");
@@ -1099,7 +1064,6 @@ public class Parse {
                                             Main.out.append("[" + var.getY() + " x i32] [");
                                             String[] tmp = tmpSplit[i].split(" ");
                                             for(int j = 0; j < tmp.length; j++){
-                                                System.out.println(tmp[j]);
                                                 if(j == var.getY() - 1){
                                                     if(i == var.getX() - 1){
                                                         Main.out.append("i32 " + tmp[j] + "]]\n");
@@ -1114,14 +1078,17 @@ public class Parse {
                                             }
                                             for(int j = tmp.length; j < var.getY(); j++){
                                                 if(j == var.getY() - 1){
-                                                    Main.out.append("i32 " + 0 + "], ");
+                                                    if(i == var.getX() - 1){
+                                                        Main.out.append("i32 " + 0 + "]]\n");
+                                                    }
+                                                    else{
+                                                        Main.out.append("i32 " + 0 + "], ");
+                                                    }
                                                 }
                                                 else{
                                                     Main.out.append("i32 " + 0 + ", ");
                                                 }
                                             }
-                                            System.out.println("num = " + tmp.length);
-                                            System.out.println("=============");
                                         }
 
                                     }
@@ -1145,7 +1112,6 @@ public class Parse {
                             Main.out.append("\t%ptr" + ptrNum++);
                             Var var = new Var("%ptr" + (ptrNum-1), name, false, -2,false,true,dimension);
                             varList.add(var);
-                            System.out.println(tmpRegister);
                             if(dimension == 1){
                                 tmpRegister = tmpRegister.substring(0,tmpRegister.length()-1);
                                 var.setX(1);
@@ -1166,12 +1132,7 @@ public class Parse {
                                 else{
                                     Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")\n");
                                     String[] items = dimen1.toString().split(" ");
-                                    System.out.println(items.length);
                                     for(int i = 0; i < items.length; i++){
-//                                        if( i == 0){
-//                                            Main.out.append("\tstore i32 " + items[i] + ", i32* " + var.getPtr() + "\n");
-//                                        }
-//                                        else{
                                         Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 " + i + "\n");
                                         var.getElems().add("%ptr"+(ptrNum-1));
                                         Main.out.append("\tstore i32 " + items[i] + ", i32* " + "%ptr" + (ptrNum - 1) + "\n");
@@ -1235,10 +1196,6 @@ public class Parse {
                                 Main.out.append(var.getRegister() + " = dso_local global i32 " + var.getValue() + "\n");
                             }
                             else{
-//                            for(int i = 0; i < varList.size(); i++){
-//                                System.out.println(varList.get(i).getName() + " " + varList.get(i).isGlobal());
-//                            }
-//                            System.out.println(name);
                                 System.out.println("this globalvar has been defined2");
                                 System.exit(1);
                             }
@@ -1395,9 +1352,6 @@ public class Parse {
 //            if(x != -2){
                 String name = Main.syms.get(id).getWord();
                 if(getVarByName(name) == null){
-                    for(int i = 0; i < varList.size(); i++){
-                        System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
-                    }
                     System.out.println("6000");
                     System.exit(1);
                 }
@@ -1741,12 +1695,7 @@ public class Parse {
                 ;
             }
             else{
-                for(int i = 0; i < varList.size(); i++){
-                    System.out.println(varList.get(i).getName());
-                }
                 System.out.println("80001");
-                System.out.println(Main.syms.get(src-1).getWord());
-                System.out.println(Main.syms.get(src).getWord());
                 System.exit(1);
             }
         }
@@ -1794,8 +1743,6 @@ public class Parse {
             }
         }
         else{
-            System.out.println(Main.syms.get(src-1).getWord());
-            System.out.println(Main.syms.get(src).getWord());
             System.out.println("100004");
             System.exit(1);
         }
