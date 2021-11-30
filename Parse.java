@@ -10,6 +10,7 @@ public class Parse {
     public static Stack<String> condStack = new Stack<>();
     public static Stack<String> elseJump = new Stack<>();
     public static Stack<Integer> endJump = new Stack<>();
+    public static Stack<String> arrVar = new Stack<>();
     public static int reg = 1;
     public static int src = 0;
     public static int bNum = 0;
@@ -166,6 +167,10 @@ public class Parse {
         if(Ident()){
             String name = Main.syms.get(src-1).getWord();
             Var var = getVarByName(name);
+//            System.out.println(name);
+//            System.out.println(var.getDimension());
+////            System.out.println(Main.syms.get(src).getWord());
+////            System.out.println(Main.syms.get(src+1).getWord());
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
             while(match(34)){
@@ -196,8 +201,8 @@ public class Parse {
                         var.setPtr("%ptr"+(ptrNum-1));
                     }
                     Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
-                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
-                    tmpStack.push("%"+(reg-1));
+//                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
+                    arrVar.push("%"+(reg-1));
                     return -2;
                 }
                 else if(dimens == 2){
@@ -210,8 +215,7 @@ public class Parse {
                         var.setPtr("%ptr"+(ptrNum-1));
                     }
                     Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
-                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
-                    tmpStack.push("%"+(reg-1));
+                    arrVar.push("%"+(reg-1));
                     return -2;
                 }
             }
@@ -282,6 +286,12 @@ public class Parse {
                     }
                     return true;
                 }
+            }
+            else if(x == -2){
+                Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
+                tmpStack.push("%"+(reg-1));
+                arrVar.pop();
+                return true;
             }
             else{
                 return true;
@@ -1262,6 +1272,34 @@ public class Parse {
                             System.exit(1);
                         }
                     }
+                    else{
+                        if(noSameGloabl(name)){
+                            Main.out.append("\t%ptr" + ptrNum++);
+                            Var var = new Var("%ptr" + (ptrNum-1), name, false, curBlock,false,true,dimension);
+                            varList.add(var);
+                            if(dimension == 1){
+                                var.setX(1);
+                                var.setY(Integer.valueOf(tmps.get(0)));
+                                Main.out.append(" = alloca [" + var.getY() +" x i32]\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                var.setPtr("%ptr"+(ptrNum-1));
+                                Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getY()*4 + ")\n");
+                            }
+                            else if(dimension == 2){
+                                var.setX(Integer.valueOf(tmps.get(0)));
+                                var.setY(Integer.valueOf(tmps.get(1)));
+                                Main.out.append(" = alloca [" + var.getX() + " x [" + var.getY() +" x i32]]\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() +" x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* %ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
+                                var.setPtr("%ptr"+(ptrNum-1));
+                                Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getX()*var.getY()*4 + ")\n");
+                            }
+                        }
+                        else{
+                            System.out.println("this var has been defined0");
+                            System.exit(1);
+                        }
+                    }
                 }
                 else{
                     if(inGlobal){
@@ -1346,8 +1384,8 @@ public class Parse {
         int id = src;
         int x = LVal();
         if(x != -1){
-            if(x != -2){
-                String name = Main.syms.get(x).getWord();
+//            if(x != -2){
+                String name = Main.syms.get(id).getWord();
                 if(getVarByName(name) == null){
                     for(int i = 0; i < varList.size(); i++){
                         System.out.println(varList.get(i).getName() + " " + varList.get(i).getBlockNum());
@@ -1363,7 +1401,12 @@ public class Parse {
                     String tmpRegister;
                     if((tmpRegister = Exp()) != null){
                         if(match(9)){
-                            Main.out.append("\tstore i32 " + tmpRegister +", i32* " + getVarByName(name).getRegister() +"\n");
+                            if(x == -2){
+                                Main.out.append("\tstore i32 " + tmpRegister +", i32* " + arrVar.pop() +"\n");
+                            }
+                            else{
+                                Main.out.append("\tstore i32 " + tmpRegister +", i32* " + getVarByName(name).getRegister() +"\n");
+                            }
                             return true;
                         }
                         else{
@@ -1392,8 +1435,8 @@ public class Parse {
                         return false;
                     }
                 }
-            }
-            return true;
+//            }
+//            return true;
         }
         else if(match(7)){
             src--;
@@ -1694,6 +1737,7 @@ public class Parse {
                     System.out.println(varList.get(i).getName());
                 }
                 System.out.println("80001");
+                System.out.println(Main.syms.get(src-1).getWord());
                 System.out.println(Main.syms.get(src).getWord());
                 System.exit(1);
             }
