@@ -2027,6 +2027,12 @@ public class Parse {
         if(match(30)){
             if(EqExp()) {
                 String b = condStack.pop();
+                if(condStack.size() == 0){
+                    String tmpString = tmpStack.pop();
+                    Main.out.append("\t%" + reg++ + " = sub i32 " + tmpString +", 0\n");
+                    Main.out.append("\t%cond" + condNum++ + " = icmp sgt i32 "+ "%" + (reg-1) +", 0\n");
+                    condStack.push("%cond"+(condNum - 1));
+                }
                 String a = condStack.pop();
                 Main.out.append("\t%cond" + condNum++ + " = and i1 " + a +", " + b +"\n");
                 condStack.push("%cond"+(condNum-1));
