@@ -36,7 +36,6 @@ public class Main {
                 "declare i32 @getarray(i32*)\n" +
                 "declare void @putarray(i32, i32*)\n");
         Parse.parseAnalyse();
-        out.append("\n}");
 
         System.out.println(Parse.bNum);
         System.out.println(Parse.curBlock);
