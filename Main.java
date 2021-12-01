@@ -42,7 +42,6 @@ public class Main {
 //
 //
         String sout = out.toString();
-        System.out.println(sout);
 //         OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream("E:\\JavaFile\\compile\\src\\lab5\\out.txt"));
            OutputStreamWriter fout = new OutputStreamWriter(new FileOutputStream(args[1]));
         fout.write(sout);
