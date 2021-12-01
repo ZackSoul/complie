@@ -1664,7 +1664,12 @@ public class Parse {
 //                                    }
                                 }
                                 else{
-                                    Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                    if(!exit){
+                                        Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                    }
+                                    else{
+                                        exit = false;
+                                    }
                                 }
                                 return true;
                             }
