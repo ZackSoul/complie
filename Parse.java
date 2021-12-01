@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -169,12 +170,7 @@ public class Parse {
     public static int LVal(){
         int id = src;
         if(Ident() && !match(5)){
-            System.out.println("========");
             String name = Main.syms.get(src-1).getWord();
-            System.out.println(name);
-            System.out.println(Main.syms.get(src).getWord());
-            System.out.println(Main.syms.get(src+1).getWord());
-            System.out.println("========");
             Var var = getVarByName(name);
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
@@ -199,6 +195,11 @@ public class Parse {
                 if(var.dimension == 2){
                     Main.out.append("\t%" + reg++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() + " x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
                     return -3;
+                }
+                else if(var.dimension == 1){
+                    Main.out.append("\t%" + reg++ + " = load i32, i32* " + var.getPtr() + "\n");
+                    tmpStack.push("%"+(reg-1));
+                    return -4;
                 }
                 return id;
             }
@@ -335,16 +336,23 @@ public class Parse {
         int id = src;
         ArrayList<String> params = new ArrayList<>();
         String tmpRegister1;
-        System.out.println(Main.syms.get(src).getWord());
         if((tmpRegister1 = Exp()) != null){
             params.add(tmpRegister1);
             while(true){
                 if(match(16)){
                     String tmp;
+                    System.out.println(Main.syms.get(src).getWord());
                     if((tmp = Exp()) != null){
                         params.add(tmp);
                     }
                     else{
+//                        System.out.println(Main.syms.get(src-5).getWord());
+//                        System.out.println(Main.syms.get(src-4).getWord());
+//                        System.out.println(Main.syms.get(src-3).getWord());
+//                        System.out.println(Main.syms.get(src-2).getWord());
+//                        System.out.println(Main.syms.get(src-1).getWord());
+//                        System.out.println(Main.syms.get(src).getWord());
+//                        System.out.println(Main.syms.get(src+1).getWord());
                         src = id;
                         System.out.println("2000");
                         System.exit(1);
@@ -1173,7 +1181,6 @@ public class Parse {
                                     var.setY(Integer.valueOf(tmps.get(1)));
                                     String[] tmpSplit = tmpRegister.split("_ ");
                                     Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
-                                    System.out.println(var.getName() + tmpSplit.length);
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
                                             if(tmpSplit.length == 1){
@@ -1923,7 +1930,6 @@ public class Parse {
         int id = src;
         if(FuncType()){
             String type = Main.syms.get(src-1).getWord();
-            System.out.println(type);
             if(Ident() || Main()){
                 String funcName = Main.syms.get(src-1).getWord();
                 if(type.equals("int")){
