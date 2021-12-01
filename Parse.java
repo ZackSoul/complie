@@ -1948,6 +1948,7 @@ public class Parse {
                     }
                     if(match(6)){
                         Main.out.append(") {\n");
+                        reg++;
                         for(int i = 0; i < funcParams.size(); i++){
                             FuncParam param = funcParams.get(i);
                             if(param.getType().equals("i32")){
@@ -2329,7 +2330,7 @@ public class Parse {
         endJump.clear();
         arrVar.clear();
         funcParams.clear();;
-        reg = 1;
+        reg = 0;
         bNum = 0;
         condNum = 1;
         exist_var = false;
