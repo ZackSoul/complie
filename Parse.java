@@ -1,4 +1,5 @@
 
+
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -12,7 +13,7 @@ public class Parse {
     public static Stack<Integer> endJump = new Stack<>();
     public static Stack<String> arrVar = new Stack<>();
     public static ArrayList<FuncParam> funcParams = new ArrayList<>();
-    public static int reg = 1;
+    public static int reg = 0;
     public static int src = 0;
     public static int bNum = 0;
     public static int condNum = 1;
