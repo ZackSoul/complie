@@ -424,7 +424,7 @@ public class Parse {
                                 }
                                 else{
                                     if(funcVar.getType().equals("int")){
-                                        Main.out.append("\t%" + reg++ + " = call int "+ funcVar.getFuncName() + "(");
+                                        Main.out.append("\t%" + reg++ + " = call i32 "+ funcVar.getFuncName() + "(");
                                         tmpStack.push("%"+(reg-1));
                                         for(int i = 0; i < params.size(); i++){
                                             if(i == params.size() - 1){
