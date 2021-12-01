@@ -171,6 +171,9 @@ public class Parse {
         int id = src;
         if(Ident() && !match(5)){
             String name = Main.syms.get(src-1).getWord();
+            System.out.println(name);
+            System.out.println(Main.syms.get(src).getWord());
+            System.out.println(Main.syms.get(src+1).getWord());
             Var var = getVarByName(name);
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
@@ -197,7 +200,7 @@ public class Parse {
                     return -3;
                 }
                 else if(var.dimension == 1){
-                    Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getPtr() + "\n");
+                    Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getRegister() + "\n");
                     tmpStack.push("%"+(reg-1));
                     return -4;
                 }
@@ -341,7 +344,6 @@ public class Parse {
             while(true){
                 if(match(16)){
                     String tmp;
-                    System.out.println(Main.syms.get(src).getWord());
                     if((tmp = Exp()) != null){
                         params.add(tmp);
                     }
@@ -2331,8 +2333,21 @@ public class Parse {
         return null;
     }
 
-    public static void reset(){
+    public static void resetVarList(){
+        ArrayList<Var> vars = new ArrayList<>();
+        for(int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getBlockNum() == -2){
+                vars.add(varList.get(i));
+            }
+        }
         varList.clear();
+        for(int i = 0; i < vars.size(); i++){
+            varList.add(vars.get(i));
+        }
+    }
+
+    public static void reset(){
+        resetVarList();
         tmpStack.clear();
         blockStack.clear();
         condStack.clear();
