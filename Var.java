@@ -12,6 +12,25 @@ public class Var {
     int x = 1;
     int y = 1;
     String ptr;
+    String firstPtr;
+    boolean isParam = false;
+
+    public boolean isParam() {
+        return isParam;
+    }
+
+    public void setParam(boolean param) {
+        isParam = param;
+    }
+
+    public String getFirstPtr() {
+        return firstPtr;
+    }
+
+    public void setFirstPtr(String firstPtr) {
+        this.firstPtr = firstPtr;
+    }
+
     ArrayList<String> elems = new ArrayList<>();
 
     public ArrayList<String> getElems() {
