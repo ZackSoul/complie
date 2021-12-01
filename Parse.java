@@ -1,5 +1,4 @@
 
-
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -170,7 +169,12 @@ public class Parse {
     public static int LVal(){
         int id = src;
         if(Ident() && !match(5)){
+            System.out.println("========");
             String name = Main.syms.get(src-1).getWord();
+            System.out.println(name);
+            System.out.println(Main.syms.get(src).getWord());
+            System.out.println(Main.syms.get(src+1).getWord());
+            System.out.println("========");
             Var var = getVarByName(name);
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
@@ -1918,7 +1922,7 @@ public class Parse {
             if(Ident() || Main()){
                 String funcName = Main.syms.get(src-1).getWord();
                 if(type.equals("int")){
-                    Main.out.append("define dso_local int ");
+                    Main.out.append("define dso_local i32 ");
                 }
                 else{
                     Main.out.append("define dso_local void ");
