@@ -214,7 +214,7 @@ public class Parse {
                 return id;
             }
             else if(dimens == 1){
-                if(var.getPtr() == null){
+                if(var.getPtr() == null && !var.isGlobal){
                     Main.out.append("\t%ptr" + ptrNum++ + " = load i32* , i32* * " + var.getRegister() + "\n");
                     var.setPtr("%ptr"+(ptrNum-1));
                 }
