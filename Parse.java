@@ -1,18 +1,19 @@
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Stack;
 
 public class Parse {
     public static ArrayList<Var> varList = new ArrayList<>();
+    public static ArrayList<FuncVar> funcVarList = new ArrayList<>();
     public static Stack<String> tmpStack = new Stack<>();
     public static Stack<String> blockStack = new Stack<>();
     public static Stack<String> condStack = new Stack<>();
     public static Stack<String> elseJump = new Stack<>();
     public static Stack<Integer> endJump = new Stack<>();
     public static Stack<String> arrVar = new Stack<>();
-    public static int reg = 1;
+    public static ArrayList<FuncParam> funcParams = new ArrayList<>();
+    public static int reg = 0;
     public static int src = 0;
     public static int bNum = 0;
     public static int condNum = 1;
@@ -46,15 +47,19 @@ public class Parse {
     }
 
     public static void CompUnit(){
-        while(Decl()){
-            ;
+        while(src < Main.syms.size() - 1){
+            if(Decl()){
+                ;
+            }
+            else{
+                FuncDef();
+            }
         }
-        FuncDef();
     }
 
     public static boolean FuncType(){
         int id = src;
-        if(match(1)){
+        if(match(1) || match(36)){
             return true;
         }
         else{
@@ -164,8 +169,11 @@ public class Parse {
 
     public static int LVal(){
         int id = src;
-        if(Ident()){
+        if(Ident() && !match(5)){
             String name = Main.syms.get(src-1).getWord();
+            System.out.println(name);
+            System.out.println(Main.syms.get(src).getWord());
+            System.out.println(Main.syms.get(src+1).getWord());
             Var var = getVarByName(name);
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
@@ -181,39 +189,70 @@ public class Parse {
                     return -1;
                 }
             }
-            if(dimens != var.getDimension()){
-                System.out.println("维数错误");
-                System.exit(1);
-                return -1;
+//            if(dimens != var.getDimension()){
+//                System.out.println("维数错误");
+//                System.exit(1);
+//                return -1;
+//            }
+            if(dimens == 0){
+                if(var.dimension == 2){
+                    Main.out.append("\t%" + reg++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() + " x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                    return -3;
+                }
+                else if(var.dimension == 1){
+                    if(var.isParam){
+                        Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getRegister() + "\n");
+                        tmpStack.push("%"+(reg-1));
+                        return -4;
+                    }
+                    else{
+                        tmpStack.push(var.getPtr());
+                    }
+                }
+                return id;
             }
-            else{
-                if(dimens == 0){
-                    return id;
+            else if(dimens == 1){
+                if(var.getPtr() == null){
+                    Main.out.append("\t%ptr" + ptrNum++ + " = load i32* , i32* * " + var.getRegister() + "\n");
+                    var.setPtr("%ptr"+(ptrNum-1));
                 }
-                else if(dimens == 1){
-                    Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
-                    if(var.isGlobal){
-                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
-                        var.setPtr("%ptr"+(ptrNum-1));
-                    }
-                    Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
-//                    Main.out.append("\t%" + reg++ + " = load i32, i32* %" + (reg-2) + "\n");
-                    arrVar.push("%"+(reg-1));
-                    return -2;
+                Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
+                if(var.isGlobal){
+                    Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
+                    var.setPtr("%ptr"+(ptrNum-1));
                 }
-                else if(dimens == 2){
-                    Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
-                    Main.out.append("\t%" + reg++ + " = mul i32 %" + (reg-2) + ", " + var.getY() + "\n");
-                    Main.out.append("\t%" + reg++ + " = add i32 %" + (reg-2) + ", " + tmps.get(1) + "\n");
-                    if(var.isGlobal){
-                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() + " x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
-                        Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() +" x i32], [" + var.getY() +" x i32]* "+ "%ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
-                        var.setPtr("%ptr"+(ptrNum-1));
-                    }
+                if(var.dimension == 2){
+                    Main.out.append("\t%" + reg++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* " + var.getFirstPtr() + ", i32 0, i32 %" + (reg-2) + "\n");
+                    return -3;
+                }
+                else{
                     Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
                     arrVar.push("%"+(reg-1));
-                    return -2;
                 }
+                return -2;
+            }
+            else if(dimens == 2){
+                if(var.getPtr() == null){
+                    Main.out.append("\t%ptr" + ptrNum++ + " = load [" + var.getY() +" x i32]*, [" + var.getY() + " x i32]* * " + var.getRegister() + "\n");
+                    var.setPtr("%ptr"+(ptrNum-1));
+                }
+                Main.out.append("\t%" + reg++ + " = add i32 0, " + tmps.get(0) + "\n");
+                Main.out.append("\t%" + reg++ + " = mul i32 %" + (reg-2) + ", " + var.getY() + "\n");
+                Main.out.append("\t%" + reg++ + " = add i32 %" + (reg-2) + ", " + tmps.get(1) + "\n");
+                if(var.isGlobal){
+                    Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() + " x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                    Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() +" x i32], [" + var.getY() +" x i32]* "+ "%ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
+                    var.setPtr("%ptr"+(ptrNum-1));
+                }
+                if(var.isParam){
+                    Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* " + var.getPtr() + ", i32 0\n");
+                    Main.out.append("\t%" + reg++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* " + "%ptr" + (ptrNum-1) + ", i32 0, i32 %" + (reg-2) + "\n");
+                }
+                else{
+                    Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
+                }
+                arrVar.push("%"+(reg-1));
+                return -2;
             }
         }
         else{
@@ -250,7 +289,7 @@ public class Parse {
             }
         }
         else if(( x = LVal()) != -1){
-            if(x != -2){
+            if(x != -2 && x != -3 && x != -4){
                 String name = Main.syms.get(x).getWord();
                 Var tmpVar = getVarByName(name);
                 if(tmpVar.isArray){
@@ -283,6 +322,10 @@ public class Parse {
                 arrVar.pop();
                 return true;
             }
+            else if(x == -3){
+                tmpStack.push("%"+(reg-1));
+                return true;
+            }
             else{
                 return true;
             }
@@ -310,6 +353,13 @@ public class Parse {
                         params.add(tmp);
                     }
                     else{
+//                        System.out.println(Main.syms.get(src-5).getWord());
+//                        System.out.println(Main.syms.get(src-4).getWord());
+//                        System.out.println(Main.syms.get(src-3).getWord());
+//                        System.out.println(Main.syms.get(src-2).getWord());
+//                        System.out.println(Main.syms.get(src-1).getWord());
+//                        System.out.println(Main.syms.get(src).getWord());
+//                        System.out.println(Main.syms.get(src+1).getWord());
                         src = id;
                         System.out.println("2000");
                         System.exit(1);
@@ -326,7 +376,8 @@ public class Parse {
     public static boolean UnaryExp(){
         int num = 0;
         int id = src;
-        if(FunctionIdent()){
+        if(Main.syms.get(src).getType() == 17 && Main.syms.get(src+1).getWord().equals("(")){
+            src++;
             String funcName = Main.syms.get(src-1).getWord();
             if(match(5)){
                 ArrayList<String> params = FuncRParams();
@@ -352,6 +403,66 @@ public class Parse {
                                 Main.out.append("\tcall void @putch(i32 " + params.get(0) + ")\n");
                             }
                         }
+                        else if(funcName.equals("putarray")){
+                            if(params.size() != 2){
+                                System.out.println("putarray参数错误");
+                                System.exit(1);
+                            }
+                            else{
+                                Main.out.append("\tcall void @putarray(i32 " + params.get(0) +", i32* " + params.get(1) + ")\n");
+                            }
+                        }
+                        else if(funcName.equals("getarray")){
+                            if(params.size() != 1){
+                                System.out.println("getarray参数错误");
+                                System.exit(1);
+                            }
+                            else{
+                                Main.out.append("\t%" + reg++ + " = call i32 @getarray(i32* " + params.get(0) +")\n");
+                                tmpStack.push("%"+(reg-1));
+                            }
+                        }
+                        else{
+                            FuncVar funcVar = getFuncByName(funcName);
+                            if(funcVar == null){
+                                System.out.println(funcName);
+                                System.out.println("不存在对应函数");
+                                System.exit(1);
+                            }
+                            else{
+                                if(funcVar.funcParams.size() != params.size()){
+                                    System.out.println("++++===");
+                                    System.out.println(funcName);
+                                    System.out.println("参数数量错误");
+                                    System.exit(1);
+                                }
+                                else{
+                                    if(funcVar.getType().equals("int")){
+                                        Main.out.append("\t%" + reg++ + " = call i32 "+ funcVar.getFuncName() + "(");
+                                        tmpStack.push("%"+(reg-1));
+                                        for(int i = 0; i < params.size(); i++){
+                                            if(i == params.size() - 1){
+                                                Main.out.append(funcVar.getFuncParams().get(i).getType() + " " + params.get(i) + ")\n");
+                                            }
+                                            else{
+                                                Main.out.append(funcVar.getFuncParams().get(i).getType() + " " + params.get(i) + ", ");
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        Main.out.append("\tcall void "+ funcVar.getFuncName() + "(");
+                                        for(int i = 0; i < params.size(); i++){
+                                            if(i == params.size() - 1){
+                                                Main.out.append(funcVar.getFuncParams().get(i).getType() + " " + params.get(i) + ")\n");
+                                            }
+                                            else{
+                                                Main.out.append(funcVar.getFuncParams().get(i).getType() + " " + params.get(i) + ", ");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         return true;
                     }
                     else{
@@ -370,6 +481,30 @@ public class Parse {
                     }
                     else if(funcName.equals("putint") || funcName.equals("putch")){
                         System.out.println("putint参数不能为空");
+                    }
+                    else{
+                        FuncVar funcVar = getFuncByName(funcName);
+                        if(funcVar != null){
+                            if(funcVar.funcParams.size() != 0){
+                                System.out.println("++++===");
+                                System.out.println(funcName);
+                                System.out.println("参数数量错误");
+                                System.exit(1);
+                            }
+                            else{
+                                if(funcVar.getType().equals("int")){
+                                    Main.out.append("\t%" + reg++ + " = call i32 " + funcVar.getFuncName() + "()\n");
+                                    tmpStack.push("%" + (reg - 1));
+                                }
+                                else{
+                                    Main.out.append("\tcall i32 " + funcVar.getFuncName() + "()\n");
+                                }
+                            }
+                        }
+                        else{
+                            System.out.println("不存在对应函数");
+                            System.exit(1);
+                        }
                     }
                     return true;
                 }
@@ -970,6 +1105,10 @@ public class Parse {
         int dimension = 0;
         boolean isArray = false;
         if(Ident()){
+            if(match(5)){
+                src = id;
+                return false;
+            }
             String name = Main.syms.get(src-1).getWord();
             if(inBlockVarList(name)){
                 System.out.println("5000");
@@ -1049,7 +1188,6 @@ public class Parse {
                                     var.setY(Integer.valueOf(tmps.get(1)));
                                     String[] tmpSplit = tmpRegister.split("_ ");
                                     Main.out.append(var.getRegister() + " = dso_local global ["+ var.getX() + " x [" + var.getY() + " x i32]] [");
-                                    System.out.println(var.getName() + tmpSplit.length);
                                     for(int i = 0; i < tmpSplit.length; i++){
                                         if(tmpSplit[i].equals("empty")){
                                             if(tmpSplit.length == 1){
@@ -1153,6 +1291,7 @@ public class Parse {
                                 var.setY(Integer.valueOf(tmps.get(1)));
                                 Main.out.append(" = alloca [" + var.getX() + " x [" + var.getY() +" x i32]]\n");
                                 Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() +" x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                var.setFirstPtr("%ptr"+(ptrNum-1));
                                 Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* %ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
                                 var.setPtr("%ptr"+(ptrNum-1));
                                 Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getX()*var.getY()*4 + ")\n");
@@ -1255,6 +1394,7 @@ public class Parse {
                                 var.setY(Integer.valueOf(tmps.get(1)));
                                 Main.out.append(" = alloca [" + var.getX() + " x [" + var.getY() +" x i32]]\n");
                                 Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getX() + " x [" + var.getY() + " x i32]], [" + var.getX() +" x [" + var.getY() + " x i32]]* " + var.getRegister() + ", i32 0, i32 0\n");
+                                var.setFirstPtr("%ptr"+(ptrNum-1));
                                 Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* %ptr" + (ptrNum-2) + ", i32 0, i32 0\n");
                                 var.setPtr("%ptr"+(ptrNum-1));
                                 Main.out.append("\tcall void @memset(i32* " + var.getPtr() + ", i32 0, i32 " + var.getX()*var.getY()*4 + ")\n");
@@ -1316,6 +1456,7 @@ public class Parse {
                     return true;
                 }
                 else{
+                    System.out.println("word = "+Main.syms.get(src).getWord());
                     src = id;
                     return false;
                 }
@@ -1536,7 +1677,12 @@ public class Parse {
 //                                    }
                                 }
                                 else{
-                                    Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                    if(!exit){
+                                        Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
+                                    }
+                                    else{
+                                        exit = false;
+                                    }
                                 }
                                 return true;
                             }
@@ -1695,6 +1841,8 @@ public class Parse {
                 ;
             }
             else{
+                System.out.println(Main.syms.get(src).getWord());
+                System.out.println(Main.syms.get(src+1).getWord());
                 System.out.println("80001");
                 System.exit(1);
             }
@@ -1716,16 +1864,142 @@ public class Parse {
         }
     }
 
+    public static boolean FuncFParam(){
+        int id = src;
+        if(BType()){
+            if(Ident()){
+                String name = Main.syms.get(src-1).getWord();
+                if(match(34)){
+                    if(match(35)){
+                        int dimension = 1;
+                        String tmpRegister = "";
+                        while(match(34)){
+                            tmpRegister = Exp();
+                            if(match(35)){
+                                dimension++;
+                            }
+                            else{
+                                System.out.println("funfparam error");
+                                System.exit(1);
+                            }
+                        }
+                        if(dimension == 1){
+                            FuncParam param = new FuncParam("i32*","%"+(reg++),name);
+                            funcParams.add(param);
+                        }
+                        else if(dimension == 2){
+                            FuncParam param = new FuncParam("[" + tmpRegister + " x i32]*","%"+(reg++),name);
+                            param.setY(Integer.valueOf(tmpRegister));
+                            funcParams.add(param);
+                        }
+                    }
+                    else{
+                        System.out.println("] not match");
+                        System.exit(1);
+                    }
+                }
+                else{
+                    FuncParam param = new FuncParam("i32","%"+(reg++),name);
+                    funcParams.add(param);
+                    return true;
+                }
+            }
+            else{
+                src = id;
+                return false;
+            }
+        }
+        else{
+            src = id;
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean FuncFParams(){
+        int id = src;
+        if(FuncFParam()){
+            while(match(16)){
+                if(FuncFParam()){
+                    ;
+                }
+            }
+        }
+        else{
+            src= id;
+            return false;
+        }
+        return true;
+    }
+
 
     public static void FuncDef(){
         int id = src;
         if(FuncType()){
-            if(Main()){
-                Main.out.append("define dso_local i32 @main(){\n");
+            String type = Main.syms.get(src-1).getWord();
+            if(Ident() || Main()){
+                String funcName = Main.syms.get(src-1).getWord();
+                if(type.equals("int")){
+                    Main.out.append("define dso_local i32 ");
+                }
+                else{
+                    Main.out.append("define dso_local void ");
+                }
                 inGlobal = false;
                 if(match(5)){
+                    FuncVar funcVar = new FuncVar("@"+funcName,type);
+                    funcVar.setName(funcName);
+                    funcVarList.add(funcVar);
+                    Main.out.append(funcVar.getFuncName() + "(");
+                    if(BType()){
+                        src--;
+                        FuncFParams();
+                        for(int i = 0; i < funcParams.size(); i++){
+                            if(i == funcParams.size()-1){
+                                Main.out.append(funcParams.get(i).getType() + " " + funcParams.get(i).getReg());
+                            }
+                            else{
+                                Main.out.append(funcParams.get(i).getType() + " "+ funcParams.get(i).getReg() + ", ");
+                            }
+                        }
+                    }
                     if(match(6)){
+                        Main.out.append(") {\n");
+                        reg++;
+                        for(int i = 0; i < funcParams.size(); i++){
+                            FuncParam param = funcParams.get(i);
+                            if(param.getType().equals("i32")){
+                                Var var = new Var("%x"+varList.size(),param.getName(),false,0,false,false,0);
+                                var.setParam(true);
+                                varList.add(var);
+                                Main.out.append("\t"+var.getRegister()+" = alloca i32\n");
+                                Main.out.append("\tstore i32 " + param.getReg() + ", i32* "+ var.getRegister() + "\n");
+                                funcVar.getFuncParams().add(new FuncParam(param.getType(),var.getRegister(),param.getName()));
+                            }
+                            else if(param.getType().equals("i32*")){
+                                Var var = new Var("%ptr"+ptrNum++,param.getName(),false,0,false,true,1);
+                                var.setParam(true);
+                                varList.add(var);
+                                Main.out.append("\t" + var.getRegister() + " = alloca i32*\n");
+                                Main.out.append("\tstore i32*  " + param.getReg() +", i32* * " + var.getRegister()+"\n");
+                                funcVar.getFuncParams().add(new FuncParam(param.getType(),var.getRegister(),param.getName()));
+                            }
+                            else{
+                                Var var = new Var("%ptr"+ptrNum++,param.getName(),false,0,false,true,2);
+                                var.setY(param.getY());
+                                var.setParam(true);
+                                varList.add(var);
+                                Main.out.append("\t"+var.getRegister() + " = alloca " + param.getType() + " \n");
+                                Main.out.append("\tstore " + param.getType() + " " + param.getReg() + ", " + param.getType() + " * " + var.getRegister()+"\n");
+                                funcVar.getFuncParams().add(new FuncParam(param.getType(),var.getRegister(),param.getName()));
+                            }
+                        }
                         Block();
+                        if(type.equals("void")){
+                            Main.out.append("\tret void\n");
+                        }
+                        Main.out.append("}\n");
+                        reset();
                     }
                     else{
                         System.out.println("100001");
@@ -2053,6 +2327,53 @@ public class Parse {
             }
         }
         return true;
+    }
+
+    public static FuncVar getFuncByName(String name){
+        for (int i = 0; i < funcVarList.size(); i++){
+            if(funcVarList.get(i).getName().equals(name)){
+                return funcVarList.get(i);
+            }
+        }
+        return null;
+    }
+
+    public static void resetVarList(){
+        ArrayList<Var> vars = new ArrayList<>();
+        for(int i = 0; i < varList.size(); i++){
+            if(varList.get(i).getBlockNum() == -2){
+                vars.add(varList.get(i));
+            }
+        }
+        varList.clear();
+        for(int i = 0; i < vars.size(); i++){
+            varList.add(vars.get(i));
+        }
+    }
+
+    public static void reset(){
+        resetVarList();
+        tmpStack.clear();
+        blockStack.clear();
+        condStack.clear();
+        elseJump.clear();
+        endJump.clear();
+        arrVar.clear();
+        funcParams.clear();;
+        reg = 0;
+        bNum = 0;
+        condNum = 1;
+        exist_var = false;
+        exit = false;
+        curBlock = 1;
+        initCond = false;
+        inGlobal = true;
+        isContinue = false;
+        isBreak = false;
+        ptrNum = 1;
+        whileJump.clear();
+        continueJump.clear();
+        breakJump.clear();
     }
 
 }
