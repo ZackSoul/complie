@@ -25,7 +25,6 @@ public class Parse {
     public static boolean isContinue = false;
     public static boolean isBreak = false;
     public static int ptrNum = 1;
-    public static int judge = 0;
     public static Stack<Integer> whileJump = new Stack<>();
     public static Stack<Integer> continueJump = new Stack<>();
     public static Stack<String> breakJump = new Stack<>();
@@ -1557,12 +1556,10 @@ public class Parse {
                     if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
                         exit = true;
-                        judge++;
                         Main.out.append("\tret i32 %" + (reg-1) + "\n\n");
                     }
                     else{
                         exit = true;
-                        judge++;
                         Main.out.append("\tret i32 " + tmpRegister + "\n\n");
                     }
                     return true;
@@ -1628,11 +1625,10 @@ public class Parse {
                                     Main.out.append("block" + bNum++ + ":\n");
                                     curBlock = bNum - 1;
                                     blockStack.push("%block" + (bNum - 1));
-                                    if(!elseContinue && !elseBreak && judge!=2){
+                                    if(!elseContinue && !elseBreak){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     }
                                     else{
-                                        judge = 0;
                                         endJump.pop();
 //                                        if(elseContinue){
 //                                            elseContinue = false;
@@ -1643,11 +1639,9 @@ public class Parse {
                                     }
                                     if(!ifContinue && !ifBreak){
                                         if(!exit){
-                                            judge = 0;
                                             Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                         }
                                         else{
-                                            judge = 0;
                                             exit = false;
                                         }
                                     }
