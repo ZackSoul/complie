@@ -24,7 +24,6 @@ public class Parse {
     public static boolean inGlobal = true;
     public static boolean isContinue = false;
     public static boolean isBreak = false;
-    public static boolean elseExit = false;
     public static int ptrNum = 1;
     public static Stack<Integer> whileJump = new Stack<>();
     public static Stack<Integer> continueJump = new Stack<>();
@@ -1557,12 +1556,10 @@ public class Parse {
                     if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
                         exit = true;
-                        elseExit = true;
                         Main.out.append("\tret i32 %" + (reg-1) + "\n\n");
                     }
                     else{
                         exit = true;
-                        elseExit = true;
                         Main.out.append("\tret i32 " + tmpRegister + "\n\n");
                     }
                     return true;
@@ -1585,6 +1582,7 @@ public class Parse {
                     if(match(6)){
                         boolean ifContinue = false;
                         boolean ifBreak = false;
+                        boolean ifExit = false;
                         initCond = true;
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
                         Main.out.append("block" + (bNum-2) + ":\n");
@@ -1601,6 +1599,10 @@ public class Parse {
                                 ifBreak = true;
                                 isBreak = false;
                             }
+                            if(exit){
+                                ifExit = true;
+                                exit = false;
+                            }
                             initCond = false;
                             removeBlockVar();
                             int tmpSize = Main.out.length();
@@ -1608,6 +1610,7 @@ public class Parse {
                             if(match(21)){
                                 boolean elseContinue = false;
                                 boolean elseBreak = false;
+                                boolean elseExit = false;
 //                                Main.out.append(elseJump.pop() + ":\n");
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n");
@@ -1622,10 +1625,14 @@ public class Parse {
                                         elseBreak = true;
                                         isBreak = false;
                                     }
+                                    if(exit){
+                                        elseExit = true;
+                                        exit = false;
+                                    }
                                     removeBlockVar();
                                     initCond = false;
                                     endJump.push(Main.out.length());
-                                    if(!elseExit){
+                                    if(!(elseExit && ifExit)){
                                         Main.out.append("block" + bNum++ + ":\n");
                                     }
                                     curBlock = bNum - 1;
@@ -1644,11 +1651,11 @@ public class Parse {
 //                                        }
                                     }
                                     if(!ifContinue && !ifBreak){
-                                        if(!exit){
+                                        if(!ifExit){
                                             Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                         }
                                         else{
-                                            exit = false;
+                                            ifExit = false;
                                         }
                                     }
                                     else{
