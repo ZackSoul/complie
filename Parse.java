@@ -207,6 +207,10 @@ public class Parse {
                             Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
                             var.setPtr("%ptr"+(ptrNum-1));
                         }
+//                        else{
+//                            Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
+//                            var.setPtr("%ptr"+(ptrNum-1));
+//                        }
                         tmpStack.push(var.getPtr());
                         return -4;
                     }
@@ -214,7 +218,7 @@ public class Parse {
                 return id;
             }
             else if(dimens == 1){
-                if(var.getPtr() == null && !var.isGlobal){
+                if(var.getPtr() == null && !var.isGlobal && var.isParam){
                     Main.out.append("\t%ptr" + ptrNum++ + " = load i32* , i32* * " + var.getRegister() + "\n");
                     var.setPtr("%ptr"+(ptrNum-1));
                 }
@@ -230,6 +234,9 @@ public class Parse {
                 else{
                     Main.out.append("\t%" + reg++ + " = getelementptr i32, i32* " + var.getPtr() + ", i32 %" + (reg-2) + "\n");
                     arrVar.push("%"+(reg-1));
+                    if(var.isParam){
+                        var.setPtr(null);
+                    }
                 }
                 return -2;
             }
@@ -500,7 +507,7 @@ public class Parse {
                                     tmpStack.push("%" + (reg - 1));
                                 }
                                 else{
-                                    Main.out.append("\tcall i32 " + funcVar.getFuncName() + "()\n");
+                                    Main.out.append("\tcall void " + funcVar.getFuncName() + "()\n");
                                 }
                             }
                         }
@@ -1594,6 +1601,7 @@ public class Parse {
                     if(match(6)){
                         boolean ifContinue = false;
                         boolean ifBreak = false;
+                        boolean ifExit = false;
                         initCond = true;
                         Main.out.append("\tbr i1 " + tmpCond + ", label %block" + bNum++ + ", label %block" + bNum++ +"\n\n");
                         Main.out.append("block" + (bNum-2) + ":\n");
@@ -1610,6 +1618,10 @@ public class Parse {
                                 ifBreak = true;
                                 isBreak = false;
                             }
+                            if(exit){
+                                ifExit = true;
+                                exit = false;
+                            }
                             initCond = false;
                             removeBlockVar();
                             int tmpSize = Main.out.length();
@@ -1617,6 +1629,7 @@ public class Parse {
                             if(match(21)){
                                 boolean elseContinue = false;
                                 boolean elseBreak = false;
+                                boolean elseExit = false;
 //                                Main.out.append(elseJump.pop() + ":\n");
                                 String tmp = elseJump.pop();
                                 Main.out.append(tmp+":\n");
@@ -1631,14 +1644,28 @@ public class Parse {
                                         elseBreak = true;
                                         isBreak = false;
                                     }
+                                    if(exit){
+                                        elseExit = true;
+                                        exit = false;
+                                    }
                                     removeBlockVar();
                                     initCond = false;
                                     endJump.push(Main.out.length());
-                                    Main.out.append("block" + bNum++ + ":\n");
-                                    curBlock = bNum - 1;
-                                    blockStack.push("%block" + (bNum - 1));
+                                    if(ifExit && elseExit){
+                                        ;
+                                    }
+                                    else{
+                                        Main.out.append("block" + bNum++ + ":\n");
+                                        curBlock = bNum - 1;
+                                        blockStack.push("%block" + (bNum - 1));
+                                    }
                                     if(!elseContinue && !elseBreak){
-                                        Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        if(elseExit){
+                                            elseExit = false;
+                                        }
+                                        else{
+                                            Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
+                                        }
                                     }
                                     else{
                                         endJump.pop();
@@ -1650,11 +1677,11 @@ public class Parse {
 //                                        }
                                     }
                                     if(!ifContinue && !ifBreak){
-                                        if(!exit){
+                                        if(!ifExit){
                                             Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                         }
                                         else{
-                                            exit = false;
+                                            ifExit = false;
                                         }
                                     }
                                     else{
@@ -1689,11 +1716,11 @@ public class Parse {
 //                                    }
                                 }
                                 else{
-                                    if(!exit){
+                                    if(!ifExit){
                                         Main.out.insert(t,"\tbr label %" + tmp + "\n\n");
                                     }
                                     else{
-                                        exit = false;
+                                        ifExit = false;
                                     }
                                 }
                                 return true;
