@@ -201,7 +201,7 @@ public class Parse {
                 }
                 else if(var.dimension == 1){
                     if(var.isParam){
-                        Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getPtr() + "\n");
+                        Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getRegister() + "\n");
                         tmpStack.push("%"+(reg-1));
                         return -4;
                     }
