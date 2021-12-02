@@ -24,6 +24,7 @@ public class Parse {
     public static boolean inGlobal = true;
     public static boolean isContinue = false;
     public static boolean isBreak = false;
+    public static boolean elseExit = false;
     public static int ptrNum = 1;
     public static Stack<Integer> whileJump = new Stack<>();
     public static Stack<Integer> continueJump = new Stack<>();
@@ -1556,10 +1557,12 @@ public class Parse {
                     if(tmpRegister.length()>= 2 && tmpRegister.substring(0,2).equals("%x")){
                         Main.out.append("\t%" + reg++ +" = load i32, i32* " + tmpRegister +"\n");
                         exit = true;
+                        elseExit = true;
                         Main.out.append("\tret i32 %" + (reg-1) + "\n\n");
                     }
                     else{
                         exit = true;
+                        elseExit = true;
                         Main.out.append("\tret i32 " + tmpRegister + "\n\n");
                     }
                     return true;
@@ -1622,13 +1625,16 @@ public class Parse {
                                     removeBlockVar();
                                     initCond = false;
                                     endJump.push(Main.out.length());
-                                    Main.out.append("block" + bNum++ + ":\n");
+                                    if(!elseExit){
+                                        Main.out.append("block" + bNum++ + ":\n");
+                                    }
                                     curBlock = bNum - 1;
                                     blockStack.push("%block" + (bNum - 1));
-                                    if(!elseContinue && !elseBreak){
+                                    if(!elseContinue && !elseBreak && !elseExit){
                                         Main.out.insert(endJump.pop(),"\tbr label %block" + (bNum - 1) + "\n\n");
                                     }
                                     else{
+                                        elseExit = false;
                                         endJump.pop();
 //                                        if(elseContinue){
 //                                            elseContinue = false;
