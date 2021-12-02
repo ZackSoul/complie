@@ -571,10 +571,12 @@ public class Parse {
                     if(tmpRegister1.length()<=5 || !tmpRegister1.substring(0,5).equals("%cond")){
                         Main.out.append("\t%cond" + condNum++ +" = icmp eq i32 " + tmpRegister1 + ", 0\n");
                         tmpStack.push("%cond"+(condNum-1));
+                        condStack.push("%cond"+(condNum-1));
                     }
                     else{
                         Main.out.append("\t%cond" + condNum++ +" = icmp eq i1 " + tmpRegister1 + ", 0\n");
                         tmpStack.push("%cond"+(condNum-1));
+                        condStack.push("%cond"+(condNum-1));
                     }
                 }
                 else{
