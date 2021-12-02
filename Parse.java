@@ -171,9 +171,6 @@ public class Parse {
         int id = src;
         if(Ident() && !match(5)){
             String name = Main.syms.get(src-1).getWord();
-            System.out.println(name);
-            System.out.println(Main.syms.get(src).getWord());
-            System.out.println(Main.syms.get(src+1).getWord());
             Var var = getVarByName(name);
             ArrayList<String> tmps = new ArrayList<>();
             int dimens = 0;
@@ -206,7 +203,12 @@ public class Parse {
                         return -4;
                     }
                     else{
+                        if(var.isGlobal){
+                            Main.out.append("\t%ptr" + ptrNum++ + " = getelementptr [" + var.getY() + " x i32], [" + var.getY() + " x i32]* "+ var.getRegister() + ", i32 0, i32 0\n");
+                            var.setPtr("%ptr"+(ptrNum-1));
+                        }
                         tmpStack.push(var.getPtr());
+                        return -4;
                     }
                 }
                 return id;
@@ -431,7 +433,7 @@ public class Parse {
                             }
                             else{
                                 if(funcVar.funcParams.size() != params.size()){
-                                    System.out.println("++++===");
+                                    System.out.println("=======");
                                     System.out.println(funcName);
                                     System.out.println("参数数量错误");
                                     System.exit(1);
@@ -489,6 +491,7 @@ public class Parse {
                                 System.out.println("++++===");
                                 System.out.println(funcName);
                                 System.out.println("参数数量错误");
+                                printGlobalVar();
                                 System.exit(1);
                             }
                             else{
@@ -2374,6 +2377,14 @@ public class Parse {
         whileJump.clear();
         continueJump.clear();
         breakJump.clear();
+    }
+
+    public static void printGlobalVar(){
+        for(int i = 0; i < varList.size(); i++){
+            if(varList.get(i).isGlobal){
+                System.out.println(varList.get(i).getName());
+            }
+        }
     }
 
 }
