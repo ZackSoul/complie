@@ -200,9 +200,14 @@ public class Parse {
                     return -3;
                 }
                 else if(var.dimension == 1){
-                    Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getPtr() + "\n");
-                    tmpStack.push("%"+(reg-1));
-                    return -4;
+                    if(var.isParam){
+                        Main.out.append("\t%" + reg++ + " = load i32* , i32* * " + var.getPtr() + "\n");
+                        tmpStack.push("%"+(reg-1));
+                        return -4;
+                    }
+                    else{
+                        tmpStack.push(var.getPtr());
+                    }
                 }
                 return id;
             }
