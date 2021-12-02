@@ -1573,8 +1573,15 @@ public class Parse {
                 }
             }
             else{
-                src = id;
-                return false;
+                if(Main.syms.get(src).getWord().equals(";")){
+                    exit = true;
+                    Main.out.append("\tret void\n");
+                    return true;
+                }
+                else{
+                    src = id;
+                    return false;
+                }
             }
         }
         //if-else
