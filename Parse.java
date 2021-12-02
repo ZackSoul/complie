@@ -2250,6 +2250,12 @@ public class Parse {
         int id = src;
         if(match(30)){
             if(EqExp()) {
+                if(condStack.size() == 0){
+                    String tmpString = tmpStack.pop();
+                    Main.out.append("\t%" + reg++ + " = sub i32 " + tmpString +", 0\n");
+                    Main.out.append("\t%cond" + condNum++ + " = icmp sgt i32 "+ "%" + (reg-1) +", 0\n");
+                    condStack.push("%cond"+(condNum - 1));
+                }
                 String b = condStack.pop();
                 if(condStack.size() == 0){
                     String tmpString = tmpStack.pop();
